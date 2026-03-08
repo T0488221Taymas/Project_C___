@@ -209,9 +209,7 @@ public:
         cout << "Trolls are more intelligent beings.\n";
         cout << "They can negotiate, but their strength is only slightly weaker than the great kingdoms.\n\n";
 
-        // cout << "1 Goblins  \n";
-        // cout << "2 Trolls\n";
-        // cout <<"3 Kingdom's Stats\n";
+
         bool run = true;
         while (run == true) {
             cout << "1 Goblins  \n";
