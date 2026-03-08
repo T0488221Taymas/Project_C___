@@ -145,6 +145,110 @@ void showLore() {
     cout << "Will you unite the world through diplomacy...\n";
     cout << "or conquer it through war?\n\n";
 }
+class Kingdom {
+    string race;
+    int warriors;
+    int min_power;
+    int max_power;
+public:
+    Kingdom (string cRace, int cwarriors,int cmin_power, int cmax_power) {
+        race = cRace;
+        warriors = cwarriors;
+        min_power = cmin_power;
+        max_power = cmax_power;
+    }
+
+
+
+    void set_race(string race) {
+        this->race = race;
+    }
+
+    void set_warriors(int warriors) {
+        this->warriors = warriors;
+    }
+
+    void set_min_power(int min_power) {
+        this->min_power = min_power;
+    }
+
+    void set_max_power(int max_power) {
+        this->max_power = max_power;
+    }
+
+
+    [[nodiscard]] string race1() const {
+        return race;
+    }
+
+
+    [[nodiscard]] int warriors1() const {
+        return warriors;
+    }
+
+    [[nodiscard]] int min_power1() const {
+        return min_power;
+    }
+
+    [[nodiscard]] int max_power1() const {
+        return max_power;
+    }
+
+};
+class Scenes {
+public:
+    void scene1(Player *player) {
+        Kingdom goblins("Goblins", 25000, 14000, 17000);
+        Kingdom trolls("Trolls", 10000, 15000, 18500);
+        int choice;
+        cout << "\n---- Scene 1 ----\n";
+        cout << "Your scouts discovered two tribes nearby.\n";
+        cout << "Goblins are cruel and aggressive creatures.\n";
+        cout << "Diplomacy rarely works with them. The language of force is more effective.\n\n";
+
+        cout << "Trolls are more intelligent beings.\n";
+        cout << "They can negotiate, but their strength is only slightly weaker than the great kingdoms.\n\n";
+
+        // cout << "1 Goblins  \n";
+        // cout << "2 Trolls\n";
+        // cout <<"3 Kingdom's Stats\n";
+        bool run = true;
+        while (run == true) {
+            cout << "1 Goblins  \n";
+            cout << "2 Trolls\n";
+            cout <<"3 Kingdom's Stats\n";
+            cin>> choice;
+            if (cin.fail()) {
+                cout<<"Invalid input, please enter a number"<<endl;
+                cin.clear();//to delete the previous
+                cin.ignore();
+                continue;// not doing the rest code
+            }
+            cin.ignore();
+            if (choice == 3) {
+                player -> showStats();
+
+                continue;
+            }
+            if (choice == 1 || choice == 2) {
+                run = false;
+            }
+            else {
+                cout<<"Enter 1-3: "<<endl;
+            }
+        }
+        if (choice == 1) {
+            cout<<"Scouts reported about Goblins: "<<endl;
+            cout<<"Warriors: " <<goblins.warriors1()<<endl;
+            cout<<"Power: "<<goblins.min_power1()<<"-"<<goblins.max_power1()<<endl;
+        }
+        else if (choice == 2) {
+            cout<<"Scouts reported about Trolls: "<<endl;
+            cout<<"Warriors: " <<trolls.warriors1()<<endl;
+            cout<<"Power: "<<trolls.min_power1()<<"-"<<trolls.max_power1()<<endl;
+        }
+    }
+};
 int main() {
     Player player("","",0,0,0);
     string inputName;
@@ -157,7 +261,8 @@ int main() {
 
     player.chooseRace();
 
-    player.showStats();
+    Scenes scene;
+    scene.scene1(&player);
 
     return 0;
 }
