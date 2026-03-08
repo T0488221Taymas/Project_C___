@@ -1,7 +1,21 @@
 #include <iostream>
 #include <string>
 using namespace std;
+#include <cstdlib>
+#include <ctime>
 
+int getValidation() {
+    int x;
+    // cin>> x;
+    while (cin.fail()) {
+        // cout<<"Invalid input, please enter a number"<<endl;
+        cin.clear();//to delete the previous
+        cin.ignore();
+
+    }
+    cin.ignore();
+    return x;
+}
 class Player {
     string Name;
     string Race;
@@ -60,19 +74,19 @@ public:
     void chooseRace() {
             bool running = true;
             while (running){
-                int choice;
+                int choice = getValidation();
                 cout << "\nChoose your race:\n";
                 cout << "1 Humans\n";
                 cout << "2 Elves\n";
                 cout << "3 Dwarves\n";
                 cin>>choice;
-                if (cin.fail()) {
-                    cout<<"Invalid input, please enter a number"<<endl;
-                    cin.clear();//to delete the previous
-                    cin.ignore();
-                    continue;// not doing the rest code
-                }
-                cin.ignore();
+                // if (cin.fail()) {
+                //     cout<<"Invalid input, please enter a number"<<endl;
+                //     cin.clear();//to delete the previous
+                //     cin.ignore();
+                //     continue;// not doing the rest code
+                // }
+                // cin.ignore();
 
                 if(choice == 1) {
 
@@ -101,7 +115,7 @@ public:
                     running = false;
                 }
                 else {
-                    cout<<"Number should be from 1-3, please try again\n";
+                    cout<<"Enter a number from 1 to 3\n";
                 }
             }
         }
@@ -239,15 +253,75 @@ public:
             cout<<"Scouts reported about Goblins: "<<endl;
             cout<<"Warriors: " <<goblins.warriors1()<<endl;
             cout<<"Power: "<<goblins.min_power1()<<"-"<<goblins.max_power1()<<endl;
+            bool running = true;
+            while (running == true) {
+                int decision;
+                cout << "\nWhat will you do?\n";
+                cout << "1 Attack\n";
+                cout << "2 Try diplomacy\n";
+                cout<<"3 See stats\n";
+
+                cin >> decision;
+                if (cin.fail()) {
+                    cout<<"Invalid input, please enter a number"<<endl;
+                    cin.clear();//to delete the previous
+                    cin.ignore();
+                    continue;// not doing the rest code
+                }
+                cin.ignore();
+                if (decision == 3) {
+
+                    player->showStats();
+
+                    continue;
+                }
+                if (decision == 1 || decision == 2) {
+
+                    running = false;
+                }
+                else {
+                    cout<<"Enter a number 1 - 3\n";
+
+                }
+                if (decision==1) {
+                    cout<<"----Battle begind----\n";
+                    int playerPower = rand()%(player->max_power1() - player->min_power1() + 1)+ player->min_power1();
+                    int goblinPower =rand() % (goblins.max_power1() - goblins.min_power1() + 1)+ goblins.min_power1();
+
+                    cout<<"Your army power: "<<playerPower<<endl;
+                    cout<<"Goblin army power: "<<goblinPower<<endl;
+
+                    if(playerPower > goblinPower){
+
+                        cout<<"Victory! Goblin tribe defeated.\n";
+
+                        int gained = goblins.warriors1()/2;
+
+                        player->set_warriors(player->warriors1() + gained);
+
+                        cout<<"Half of goblin warriors joined you: +"<<gained<<endl;
+                        player->set_min_power(player->min_power1() + 400);
+                        player->set_max_power(player->max_power1() + 400);
+                    }
+                    else {
+
+                    }
+                }
+                else if (decision == 2){
+                    cout<<"You attempt diplomacy...\n";
+                }
+            }
         }
         else if (choice == 2) {
             cout<<"Scouts reported about Trolls: "<<endl;
             cout<<"Warriors: " <<trolls.warriors1()<<endl;
             cout<<"Power: "<<trolls.min_power1()<<"-"<<trolls.max_power1()<<endl;
         }
+
     }
 };
 int main() {
+    srand(time(0));
     Player player("","",0,0,0);
     string inputName;
     cout<<"Enter your name: ";
