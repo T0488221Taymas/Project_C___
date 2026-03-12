@@ -22,14 +22,16 @@ class Player {
     int min_power;
     int max_power;
     int lives;
+    int wisdom;
 public:
-        Player (string cName, string cRace, int cwarriors,int cmin_power, int cmax_power, int clives) {
+        Player (string cName, string cRace, int cwarriors,int cmin_power, int cmax_power, int clives, int cwisdom) {
             Name = cName;
             Race = cRace;
             warriors = cwarriors;
             min_power = cmin_power;
             max_power = cmax_power;
             lives = clives;
+            wisdom = cwisdom;
         }
 
     void set_name(string name) {
@@ -53,6 +55,9 @@ public:
     }
     void set_clives(int lives) {
             this->lives = lives;
+        }
+    void set_wisdom(int wisdom) {
+            this -> wisdom = wisdom;
         }
 
     [[nodiscard]] string name() const {
@@ -78,9 +83,13 @@ public:
     [[nodiscard]] int lives1() const {
         return lives;
     }
-    void LoseLfve() {
+    void LoseLive() {
             lives--;
         }
+
+    [[nodiscard]] int wisdom1() const {
+        return wisdom;
+    }
 
     void chooseRace() {
             bool running = true;
@@ -105,17 +114,19 @@ public:
 
                     set_race("Humans");
                     set_warriors(25000);
-                    set_min_power(18000);
-                    set_max_power(20000);
+                    set_min_power(20000);
+                    set_max_power(22500);
+                    set_wisdom(2);
                     running = false;
                 }
 
                 else if(choice == 2) {
 
                     set_race("Elves");
-                    set_warriors(18000);
-                    set_min_power(20000);
-                    set_max_power(22000);
+                    set_warriors(16000);
+                    set_min_power(19000);
+                    set_max_power(21500);
+                    set_wisdom(3);
                     running = false;
                 }
 
@@ -125,6 +136,7 @@ public:
                     set_warriors(12000);
                     set_min_power(21000);
                     set_max_power(23500);
+                    set_wisdom(1);
                     running = false;
                 }
                 else {
@@ -139,7 +151,9 @@ public:
                 cout<<"Race: "<<race()<<endl;
                 cout<<"Warriors: "<<warriors1()<<endl;
                 cout<<"Power values between: "<<min_power1()<<"-"<< max_power1()<<endl;
-                cout<<"Lives: "<<lives1()<<"\n"<<endl;
+                cout<<"Lives: "<<lives1()<<endl;
+                cout <<"Wisdom: "<<wisdom1()<<"\n"<<endl;
+
             }
     };
 void showLore() {
@@ -240,11 +254,12 @@ public:
             cout<<"Part of "<<enemy.race1()<<" warriors joined you: +"<<gained<<endl;
             player->set_min_power(player->min_power1() + 400);
             player->set_max_power(player->max_power1() + 400);
+            cout<<"Your power increased: "<<player->min_power1()<<"-"<<player->max_power1()<<endl;
             return true;
         }
 
         else {
-            player->LoseLfve();
+            player->LoseLive();
 
             cout << "\nDefeat!\n";
             cout << "You lost one life.\n";
@@ -267,9 +282,40 @@ public:
 };
 class Scenes {
 public:
+
+    bool introRiddle(Player* player){
+        cout << "\nBefore your coronation a sage asks a riddle.\n\n";
+        cout << "I speak without a mouth and hear without ears.\n";
+        cout << "I have no body but come alive with wind.\n";
+        cout << "What am I?\n\n";
+        cout << "1 Echo\n";
+        cout << "2 Shadow\n";
+        if(player->wisdom1() <= 2)
+            cout << "3 Fire\n";
+        if(player->wisdom1() == 1)
+            cout << "4 Wind\n";
+        cout << "\nYour answer: ";
+        int answer = getValidation();
+        cout << "\nYou step before your people and speak:\n";
+        cout << "Our kingdom stands united. Together we will build a future no enemy can destroy.\n\n";
+
+        if(answer == 1){
+            cout << "The crowd erupts in cheers.\n";
+            player->set_min_power(player->min_power1() + 400);
+            player->set_max_power(player->max_power1() + 400);
+            cout << "Power +400\n";
+        }
+        else{
+            cout << "The crowd looks uncertain.\n";
+            player->set_min_power(player->min_power1() - 400);
+            player->set_max_power(player->max_power1() - 400);
+            cout << "Power -400\n";
+        }
+        cout << "\n--- Chapter 1 begins ---\n";
+        return true;
+    }
+
     void goblinRaid(Player* player){
-
-
 
         int loss = player->warriors1() * 0.15;
 
@@ -285,27 +331,36 @@ public:
     }
     bool trollPuzzle() {
 
-        cout << "The Troll King speaks:\n";
-        cout << "\"Answer my riddle and we may become allies...\"\n\n";
+        cout << "\nThe Troll King asks a riddle.\n\n";
 
-        cout << "I speak without a mouth and hear without ears.\n";
-        cout << "I have no body, but I come alive with wind.\n";
+        cout << "The more you take, the more you leave behind.\n";
         cout << "What am I?\n\n";
 
-        cout << "1 Echo\n";
-        cout << "2 Shadow\n";
-        cout << "3 Fire\n";
-        cout<<"Your answer: ";
+        cout << "1 Footsteps\n";
+        cout << "2 Shadows\n";
+        cout << "3 Stones\n";
 
-        int answer = getValidation();
+        cout << "\nYour answer: ";
 
-        if(answer == 1){
-            return true;
+        int answer;
+
+        while (true) {
+            answer = getValidation();
+            if(answer >= 1 && answer<=3){
+                cout<<"Enter number between 1-3\n";
+                break;
+
+            }
         }
+            if(answer == 1){
+                cout << "The Troll King nods in approval.\n";
+                return true;
+            }
 
+            cout << "The Troll King laughs. Wrong answer.\n";
         return false;
     }
-    void trollPunishment(Player* player){
+    void trollPunishment(Player *player){
 
         cout << "The Troll King roars with laughter.\n";
         cout << "\"Wrong answer!\"\n";
@@ -324,7 +379,7 @@ public:
         cout << "Your army loses confidence.\n";
         cout << "Power decreased by 500.\n";
     }
-    void scene1(Player *player) {
+    void humanStory(Player *player){
         Kingdom goblins("Goblins", 25000, 14000, 17000);
         Kingdom trolls("Trolls", 10000, 15000, 18500);
         // int choice = getValidation();
@@ -381,7 +436,6 @@ public:
                             cout << "You must decide again.\n";
                         }
                     }
-
 
                     else if (decision == 2){
                         cout<<"You attempt diplomacy...\n";
@@ -456,6 +510,84 @@ public:
             }
         }
     }
+    bool elfPuzzleTree() {
+        cout << "\n--- Elven Campaign ---\n";
+        cout << "You approach an ancient tree in the heart of the forest.\n";
+
+        cout << "\nThe tree speaks:\n";
+        cout << "\"Answer my riddle, ruler of the elves.\"\n\n";
+
+        cout << "I have keys but no locks.\n";
+        cout << "I have space but no room.\n";
+        cout << "You can enter but cannot go outside.\n";
+        cout << "What am I?\n\n";
+
+        cout << "1 Keyboard\n";
+        cout << "2 Book\n";
+        cout<<"Your answer:";
+
+        int answer;
+
+        while (true) {
+            answer = getValidation();
+            if(answer >= 1 && answer<=2){
+                cout<<"Enter number between 1-2\n";
+                break;
+
+            }
+        }
+            if(answer == 1){
+                cout << "The tree nods in approval.\n";
+                return true;
+            }
+
+            cout << "Wrong answer.\n";
+            return false;
+    }
+    bool puzzleBeastfolkRiddle(){
+
+        cout << "\nThe Beastfolk leader challenges you with a riddle.\n\n";
+
+        cout << "I have cities but no houses.\n";
+        cout << "I have rivers but no water.\n";
+        cout << "I have forests but no trees.\n";
+        cout << "What am I?\n\n";
+
+        cout << "1 Map\n";
+        cout << "2 Shadow\n";
+
+
+        int answer;
+        while(true) {
+            answer = getValidation();
+            if(answer >= 1 && answer <= 2){
+                cout << "Enter number between 1 and 2\n";
+                break;
+
+            }
+        }
+        if(answer == 1){
+            cout << "Correct answer.\n";
+            return true;
+        }
+        cout << "Wrong answer.\n";
+        return false;
+    }
+    void elfStory(Player *player) {
+        Kingdom beastfolk("Beastfolk", 19000,17000,20000);
+        Kingdom spirits("Spirit", 5000,10000,15000);
+        bool tree = elfPuzzleTree();
+
+        if (tree) {
+            cout << "\nThe ancient tree whispers:\n";
+            cout << "The forest spirits respect wisdom.\n";
+            cout << "With them diplomacy will be easy.\n";
+        }
+        else {
+            cout << "\nThe ancient tree remains silent.\n";// second scene in elf's story
+        }
+
+    }
 };
 
     void balance(Player *player, Kingdom &humans, Kingdom &elves, Kingdom &dwarves){
@@ -483,19 +615,25 @@ public:
         Kingdom humans("Humans",25000,18000,20000);
         Kingdom elves("Elves",18000,20000,22000);
         Kingdom dwarves("Dwarves",12000,21000,23500);
-        Player player("","",0,0,0,3);
+        Player player("","",0,0,0,3,0);
         string inputName;
         cout<<"Enter your name: ";
-        cin>>inputName;
+        getline(cin,inputName);
         player.set_name(inputName);
         cout << "\nWelcome, ruler " << player.name() << "!\n\n";
 
         showLore();
 
         player.chooseRace();
+
         balance(&player,humans, elves, dwarves);
         Scenes scene;
-        scene.scene1(&player);
-
+        scene.introRiddle(&player);
+        if(player.race() == "Humans"){
+            scene.humanStory(&player);
+        }
+        else if(player.race() == "Elves"){
+            scene.elfStory(&player);
+        }
         return 0;
     }
