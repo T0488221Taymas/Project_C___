@@ -562,7 +562,7 @@ public:
             answer = getValidation();
             if(answer >= 1 && answer <= 2){
                 cout << "Enter number between 1 and 2\n";
-                break;
+                break;//
 
             }
         }
