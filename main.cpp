@@ -532,8 +532,7 @@ public:
             return false;
         }
     }
-    bool puzzleBeastfolkRiddle(){
-
+    bool puzzleBeastfolkRiddle() {
         cout << "\nThe Beastfolk leader challenges you with a riddle.\n\n";
 
         cout << "I have cities but no houses.\n";
@@ -544,19 +543,17 @@ public:
         cout << "1 Map\n";
         cout << "2 Shadow\n";
         int answer;
-        while(true) {
+        while(answer < 1 || answer > 2){
+            cout << "Enter number between 1 and 2\n";
             answer = getValidation();
-            if(answer >= 1 && answer <= 2){
-                cout << "Enter number between 1 and 2\n";
-                break;//
+
+            if(answer == 1){
+                cout << "Correct answer.\n";
+                return true;
             }
+            cout << "Wrong answer.\n";
+            return false;
         }
-        if(answer == 1){
-            cout << "Correct answer.\n";
-            return true;
-        }
-        cout << "Wrong answer.\n";
-        return false;
     }
     int ElfChoose1(Player *player){
         int x;
