@@ -4,7 +4,7 @@ using namespace std;
 #include <cstdlib>
 #include <ctime>
 
-int getValidation() {
+int getValidation() {//validation
     int x;
     cin>>x;
     while (cin.fail()) {
@@ -96,19 +96,12 @@ public:
 
             while (running){
 
-                cout << "\nChoose your race:\n";
+                cout << "\nChoose your race:\n";//scene 1
                 cout << "1 Humans\n";
                 cout << "2 Elves\n";
                 cout << "3 Dwarves\n";
                 cout<<"Enter your choice: ";
-                // cin>>choice;
-                // if (cin.fail()) {
-                //     cout<<"Invalid input, please enter a number"<<endl;
-                //     cin.clear();//to delete the previous
-                //     cin.ignore();
-                //     continue;// not doing the rest code
-                // }
-                // cin.ignore();
+
                 int choice = getValidation();//scene 1
                 if(choice == 1) {
 
@@ -236,7 +229,7 @@ public:
     [[nodiscard]] int max_power1() const {
         return max_power;
     }
-    bool battle(Player *player, Kingdom enemy) {
+    bool battle(Player *player, Kingdom enemy) {//battle logic
         cout << "---Battle begins---\n";
         int playerPower = rand()%(player->max_power1() - player->min_power1() + 1)+ player->min_power1();
         int enemyPower =rand() % (enemy.max_power1() - enemy.min_power1() + 1)+ enemy.min_power1();
@@ -282,9 +275,31 @@ public:
 };
 class Scenes {
 public:
-
-    bool introRiddle(Player* player){
-        cout << "\nBefore your coronation a sage asks a riddle.\n\n";
+    int chooseAction(Player* player){
+        int decision;
+        bool run = true;
+        while(run){
+            cout << "\nWhat will you do?\n";
+            cout << "1 Attack\n";
+            cout << "2 Try diplomacy\n";
+            cout << "3 See stats\n";
+            cout << "Enter your choice: ";
+            decision = getValidation();
+            if(decision == 3){
+                player->showStats();
+                continue;
+            }
+            if(decision == 1 || decision == 2){
+                run = false;
+            }
+            else{
+                cout << "Enter number 1-3\n";
+            }
+        }
+        return decision;
+    }
+    bool introRiddle(Player* player){//scene 2
+        cout << "\nBefore your coronation a sage asks a riddle.\n\n";//puzzle
         cout << "I speak without a mouth and hear without ears.\n";
         cout << "I have no body but come alive with wind.\n";
         cout << "What am I?\n\n";
@@ -311,9 +326,45 @@ public:
             player->set_max_power(player->max_power1() - 400);
             cout << "Power -400\n";
         }
-        cout << "\n--- Chapter 1 begins ---\n";
         return true;
     }
+    int Humanchoose1(Player *player) {//scene 3
+
+        cout << "Your scouts discovered two tribes nearby.\n";
+        cout << "Goblins are cruel and aggressive creatures.\n";
+        cout << "Diplomacy does not work with them. The language of force is more effective.\n\n";
+
+        cout << "Trolls are more intelligent beings.\n";
+        cout << "They can negotiate, but their strength is only slightly weaker than the great kingdoms.\n\n";
+        cout << "\nYour advisor whispers:\n";
+        cout << "\"Goblins are unpredictable,its better kill them first\"\n";//puzzle
+        int x;
+
+        bool run = true;
+        while (run == true) {
+            cout<<"With who will you contact \n";
+            cout << "1 Goblins  \n";
+            cout << "2 Trolls\n";
+            cout <<"3 Kingdom's Stats\n";
+            cout<<"Enter your choice: ";
+
+            x = getValidation();
+
+            if (x == 3) {
+                player -> showStats();
+
+                continue;
+            }
+            if (x >=1 && x<=3) {
+                run = false;
+            }
+            else {
+                cout<<"Enter a number between 1 and 3\n";
+            }
+        }
+        return x;
+    }
+
 
     void goblinRaid(Player* player){
 
@@ -329,37 +380,31 @@ public:
         cout << "Your soldiers are demoralized.\n";
         cout << "Army power decreased by 700.\n";
     }
-    bool trollPuzzle() {
-
+    bool trollPuzzle(Player *player) {
         cout << "\nThe Troll King asks a riddle.\n\n";
-
         cout << "The more you take, the more you leave behind.\n";
         cout << "What am I?\n\n";
 
         cout << "1 Footsteps\n";
         cout << "2 Shadows\n";
         cout << "3 Stones\n";
-
         cout << "\nYour answer: ";
-
-        int answer;
-
-        while (true) {
+        int answer = getValidation();
+        while(answer < 1 || answer > 3){
+            cout << "Enter number between 1-3\n";
             answer = getValidation();
-            if(answer >= 1 && answer<=3){
-                cout<<"Enter number between 1-3\n";
-                break;
-
-            }
         }
-            if(answer == 1){
-                cout << "The Troll King nods in approval.\n";
-                return true;
-            }
-
+        if(answer == 1){
+            cout << "The Troll King nods in approval.\n";
+            return true;
+        }
+        else{
             cout << "The Troll King laughs. Wrong answer.\n";
-        return false;
+            trollPunishment(player);
+            return false;
+        }
     }
+
     void trollPunishment(Player *player){
 
         cout << "The Troll King roars with laughter.\n";
@@ -379,137 +424,80 @@ public:
         cout << "Your army loses confidence.\n";
         cout << "Power decreased by 500.\n";
     }
-    void humanStory(Player *player){
+    void Scene4(Player *player, int choice) {
+
         Kingdom goblins("Goblins", 25000, 14000, 17000);
         Kingdom trolls("Trolls", 10000, 15000, 18500);
-        // int choice = getValidation();
 
-        cout << "\n---- Scene 1 ----\n";
-        cout << "Your scouts discovered two tribes nearby.\n";
-        cout << "Goblins are cruel and aggressive creatures.\n";
-        cout << "Diplomacy does not work with them. The language of force is more effective.\n\n";
-
-        cout << "Trolls are more intelligent beings.\n";
-        cout << "They can negotiate, but their strength is only slightly weaker than the great kingdoms.\n\n";
-        cout << "\nYour advisor whispers:\n";
-        cout << "\"Goblins are unpredictable,its better kill them first\"\n";//puzzle
-
-        int choice;
-        bool run = true;
-        while (run == true) {
-            cout<<"With who will you contact \n";
-            cout << "1 Goblins  \n";
-            cout << "2 Trolls\n";
-            cout <<"3 Kingdom's Stats\n";
-            cout<<"Enter your choice: ";
-
-            choice = getValidation();//scene 1
-
-            if (choice == 3) {
-                player -> showStats();
-
-                continue;
-            }
-            if (choice == 1) {
-                cout<<"Scouts reported about Goblins: "<<endl;
-                cout<<"Warriors: " <<goblins.warriors1()<<endl;
-                cout<<"Power: "<<goblins.min_power1()<<"-"<<goblins.max_power1()<<endl;
-
-                bool running = true;
-                while (running == true) {
-
-                    cout << "\nWhat will you do?\n";
-                    cout << "1 Attack\n";
-                    cout << "2 Try diplomacy\n";
-                    cout<<"3 See stats\n";
-                    cout<<"Enter your choice: ";
-                    int decision = getValidation();
-
-                    if (decision == 1) {
-                        bool win = goblins.battle(player, goblins);
-                        if(win){
-                            running = false;
-                            run = false;
-                        }
-                        else{
-                            cout << "Your army retreats and regroups...\n";
-                            cout << "You must decide again.\n";
-                        }
-                    }
-
-                    else if (decision == 2){
-                        cout<<"You attempt diplomacy...\n";
-                        cout << "\n--- Ambush! ---\n";
-                        cout << "While you tried diplomacy, the goblins attacked your kingdom!\n";
-                        goblinRaid(player);
-                        cout<<"After exploring there lands your people find weapons factory\n";//its an item that in future will give bonusses
-                    }
-                    else {
-                        cout<<"Enter 1-3: "<<endl;
-                    }
-                }
-            }
-            else if (choice == 2) {
-                cout<<"Scouts reported about Trolls: "<<endl;
-                cout<<"Warriors: " <<trolls.warriors1()<<endl;
-                cout<<"Power: "<<trolls.min_power1()<<"-"<<trolls.max_power1()<<endl;
-
-                bool running = true;
-                while (running == true) {
-                    // int decision = getValidation();
-                    cout << "\nWhat will you do?\n";
-                    cout << "1 Attack\n";
-                    cout << "2 Try diplomacy\n";
-                    cout<<"3 See stats\n";
-                    cout<<"Enter your choice: ";
-                    int decision = getValidation();
-                    if (decision == 3) {
-
-                        player->showStats();
-
-                        continue;
-                    }
-
-                if (decision == 1) {
-                    bool win = trolls.battle(player, trolls);
+        if (choice == 1) {
+            cout<<"Scouts reported about Goblins:\n";
+            cout<<"Warriors: " <<goblins.warriors1()<<endl;
+            cout<<"Power: "<<goblins.min_power1()<<"-"<<goblins.max_power1()<<endl;
+            bool running = true;
+            while (running) {
+                int decision = chooseAction(player);
+                if (decision == 1){
+                    bool win = goblins.battle(player, goblins);
                     if(win){
                         running = false;
-                        run = false;
-                        cout << "\n--- While your army fights the Trolls ---\n";
-                        cout << "Goblins attack your unprotected kingdom!\n";
-                        goblinRaid(player);
-
                     }
                     else{
-                        cout << "\nYour army retreats and regroups...\n";
-                        cout << "You must decide again.\n";
+                        cout << "Your army retreats and regroups...\n";
                     }
                 }
                 else if (decision == 2){
                     cout<<"You attempt diplomacy...\n";
-                    bool solved = trollPuzzle();
-
-                    if(solved){
-                        cout << "\nThe Troll King nods.\n";
-                        cout << "\"You are wise. You can once use a mobilisation ticket.\"\n";// item, will be written later
-                        running = false;
-                        run = false;
-                    }
-                    else{
-                        trollPunishment(player);
-                    }
+                    cout << "\n--- Ambush! ---\n";
+                    cout << "While you tried diplomacy, the goblins attacked your kingdom!\n";
+                    goblinRaid(player);
+                    cout<<"Your people discover a weapon factory\n";
+                    running = false;
                 }
-                else {
-                    cout<<"Enter a number 1 - 3\n";
-
+                else{
+                    cout<<"Enter number 1-3\n";
                 }
-            }
-            }
-            else {
-                cout<<"Enter 1-3: "<<endl;
             }
         }
+        else if (choice == 2){
+            cout<<"Scouts reported about Trolls:\n";
+            cout<<"Warriors: " <<trolls.warriors1()<<endl;
+            cout<<"Power: "<<trolls.min_power1()<<"-"<<trolls.max_power1()<<endl;
+            bool running = true;
+            while (running){
+                int decision = chooseAction(player);
+                if (decision == 1){
+                    bool win = trolls.battle(player, trolls);
+                    if(win){
+                        cout << "\n--- While your army fights the Trolls ---\n";
+                        cout << "Goblins attack your kingdom!\n";
+                        goblinRaid(player);
+                        running = false;
+                    }
+                    else{
+                        cout << "\nYour army retreats and regroups...\n";
+                    }
+                }
+                else if (decision == 2){
+                    bool solved = trollPuzzle(player);
+                    if(solved){
+                        cout<<"\nThe Troll King nods.\n";
+                        cout<<"You receive a mobilisation ticket.\n";
+                        running = false;
+                    }
+                }
+                else{
+                    cout<<"Enter number 1-3\n";
+                }
+            }
+
+        }
     }
+
+    void humanStory(Player *player){
+        int choice = Humanchoose1(player);
+        Scene4(player,choice);
+    }
+
     bool elfPuzzleTree() {
         cout << "\n--- Elven Campaign ---\n";
         cout << "You approach an ancient tree in the heart of the forest.\n";
@@ -524,25 +512,25 @@ public:
 
         cout << "1 Keyboard\n";
         cout << "2 Book\n";
-        cout<<"Your answer:";
+        cout << "Your answer: ";
 
-        int answer;
+        int answer = getValidation();
 
-        while (true) {
+        while(answer < 1 || answer > 2){
+            cout << "Enter number between 1-2\n";
             answer = getValidation();
-            if(answer >= 1 && answer<=2){
-                cout<<"Enter number between 1-2\n";
-                break;
-
-            }
         }
-            if(answer == 1){
-                cout << "The tree nods in approval.\n";
-                return true;
-            }
 
+        if(answer == 1){
+            cout << "\nThe ancient tree whispers:\n";
+            cout << "The forest spirits respect wisdom.\n";
+            cout << "With them diplomacy will be easy.\n";
+            return true;
+        }
+        else{
             cout << "Wrong answer.\n";
             return false;
+        }
     }
     bool puzzleBeastfolkRiddle(){
 
@@ -555,15 +543,12 @@ public:
 
         cout << "1 Map\n";
         cout << "2 Shadow\n";
-
-
         int answer;
         while(true) {
             answer = getValidation();
             if(answer >= 1 && answer <= 2){
                 cout << "Enter number between 1 and 2\n";
                 break;//
-
             }
         }
         if(answer == 1){
@@ -573,20 +558,100 @@ public:
         cout << "Wrong answer.\n";
         return false;
     }
+    int ElfChoose1(Player *player){
+        int x;
+        bool run = true;
+        cout << "\nTwo groups live near your forests.\n";
+        cout << "Beastfolk tribes roam the wild lands.\n";
+        cout << "Forest spirits guard ancient places.\n\n";
+        while(run){
+            cout<<"Who will you approach?\n";
+            cout<<"1 Beastfolk\n";
+            cout<<"2 Spirits\n";
+            cout<<"3 Kingdom Stats\n";
+            cout<<"Enter your choice: ";
+            x = getValidation();
+            if(x == 3){
+                player->showStats();
+                continue;
+            }
+            if(x == 1 || x == 2){
+                run = false;
+            }
+            else{
+                cout<<"Enter number between 1 and 3\n";
+            }
+        }
+        return x;
+    }
+    void SceneElf4(Player *player, int choice, bool tree){
+
+
+        Kingdom beastfolk("Beastfolk",19000,17000,20000);
+        Kingdom spirits("Spirits",5000,10000,15000);
+
+        if(choice == 1){
+            cout<<"Scouts reported about Beastfolk:\n";
+            cout<<"Warriors: "<<beastfolk.warriors1()<<endl;
+            cout<<"Power: "<<beastfolk.min_power1()<<"-"<<beastfolk.max_power1()<<endl;
+            bool running = true;
+            while(running){
+                int decision = chooseAction(player);
+                if(decision == 1){
+                    bool win = beastfolk.battle(player, beastfolk);
+                    if(win){
+
+                        running = false;
+                    }
+                    else{
+                        cout<<"Your army retreats and regroups...\n";
+                    }
+                }
+                else if(decision == 2){
+                    bool solved = puzzleBeastfolkRiddle();
+                    if(solved){
+                        cout<<"The Beastfolk agree to join your cause.\n";
+                        running = false;
+                    }
+                    else{
+                        cout<<"Negotiations fail.\n";
+                        bool win = beastfolk.battle(player, beastfolk);
+                        if(win){
+                            running = false;
+                        }
+                        else{
+                            cout<<"Your army retreats and regroups...\n";
+                        }
+                    }
+                }
+            }
+        }
+        else if(choice == 2){
+            cout<<"You approach the forest spirits.\n";
+            bool running = true;
+            while(running){
+                int decision = chooseAction(player);
+                if(decision == 1){
+                    cout<<"The spirits are weak and quickly defeated.\n";
+                    cout<<"Their defeat brings no benefit.\n";
+                    running = false;
+                }
+                else if(decision == 2){
+                    if(tree){
+                        cout<<"The spirits recognise your wisdom and immediately join you.\n";
+                    }
+                    else{
+                        cout<<"The spirits cautiously agree to cooperate.\n";
+                    }
+                    running = false;
+                }
+            }
+        }
+    }
     void elfStory(Player *player) {
-        Kingdom beastfolk("Beastfolk", 19000,17000,20000);
-        Kingdom spirits("Spirit", 5000,10000,15000);
         bool tree = elfPuzzleTree();
-
-        if (tree) {
-            cout << "\nThe ancient tree whispers:\n";
-            cout << "The forest spirits respect wisdom.\n";
-            cout << "With them diplomacy will be easy.\n";
-        }
-        else {
-            cout << "\nThe ancient tree remains silent.\n";// second scene in elf's story
-        }
-
+        int choice = ElfChoose1(player);
+        SceneElf4(player, choice, tree);
     }
 };
 
