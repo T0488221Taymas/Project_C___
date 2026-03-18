@@ -3,6 +3,7 @@
 using namespace std;
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
 int getValidation() {//validation
     int x;
@@ -15,6 +16,7 @@ int getValidation() {//validation
     }
     return x;
 }
+class item; //declaration
 class Player {
     string Name;
     string Race;
@@ -23,6 +25,8 @@ class Player {
     int max_power;
     int lives;
     int wisdom;
+
+    vector <item*> inventory;
 public:
         Player (string cName, string cRace, int cwarriors,int cmin_power, int cmax_power, int clives, int cwisdom) {
             Name = cName;
@@ -32,6 +36,21 @@ public:
             max_power = cmax_power;
             lives = clives;
             wisdom = cwisdom;
+        }
+    void addItem(item *item) {
+           inventory.push_back(item);
+           cout<<"Item received: "<< item->item_name()<<endl;
+        }
+    void showInventory() {
+            cout<<"----Inventory----\n";
+            if (inventory.empty()) {
+                cout<<"Inventory empty\n";
+            }
+            else {
+                for (int i= 0; i < inventory.size(); i++) {
+                    cout<<i++<<")"<<inventory[i]->item_name<<endl;
+                }
+            }
         }
 
     void set_name(string name) {
@@ -149,6 +168,26 @@ public:
 
             }
     };
+class item {
+protected:
+    string itemName;
+public:
+    item (string cItemName) {
+        itemName = cItemName;
+    }
+
+    string item_name(){
+        return itemName;
+    }
+
+    void set_item_name(string item_name) {
+        itemName = item_name;
+    }
+    void useName(Player *player) {
+        cout<<"You used "<< itemName<<endl;
+    }
+};
+
 void showLore() {
 
     cout << "---------------------------------\n";
