@@ -16,7 +16,32 @@ int getValidation() {//validation
     }
     return x;
 }
-class item; //declaration
+
+class Player;// declaration
+
+
+class Item {
+protected:
+    string itemName;
+public:
+    Item (string cItemName) {
+        itemName = cItemName;
+    }
+    virtual void use(Player*player) {
+        cout<< "You used: "<<itemName<<endl;
+    }
+
+    string item_name(){
+        return itemName;
+    }
+
+
+};
+
+
+
+
+
 class Player {
     string Name;
     string Race;
@@ -26,7 +51,7 @@ class Player {
     int lives;
     int wisdom;
 
-    vector <item*> inventory;
+    vector <Item*> inventory;
 public:
         Player (string cName, string cRace, int cwarriors,int cmin_power, int cmax_power, int clives, int cwisdom) {
             Name = cName;
@@ -37,9 +62,9 @@ public:
             lives = clives;
             wisdom = cwisdom;
         }
-    void addItem(item *item) {
-           inventory.push_back(item);
-           cout<<"Item received: "<< item->item_name()<<endl;
+    void addItem(Item *newItem) {
+           inventory.push_back(newItem);
+           cout<<"Item received: "<< newItem->item_name()<<endl;
         }
     void showInventory() {
             cout<<"----Inventory----\n";
@@ -48,10 +73,23 @@ public:
             }
             else {
                 for (int i= 0; i < inventory.size(); i++) {
-                    cout<<i++<<")"<<inventory[i]->item_name<<endl;
+                    cout<<i+1<<")"<<inventory[i]->item_name()<<endl;
                 }
             }
         }
+
+    //gpt
+    void useItem(int index) {
+            if (index < 0 || index >= inventory.size()) {
+                cout << "Invalid item!\n";
+                return;
+            }
+
+            inventory[index]->use(this);
+
+            delete inventory[index];
+            inventory.erase(inventory.begin() + index);
+        }//
 
     void set_name(string name) {
         Name = name;
@@ -168,25 +206,20 @@ public:
 
             }
     };
-class item {
-protected:
-    string itemName;
+
+class MobilizationTicket : public Item {
 public:
-    item (string cItemName) {
-        itemName = cItemName;
-    }
+    MobilizationTicket() : Item("Mobilization Ticket") {}
+    void use(Player *player) override {
+        cout<< "You used "<< itemName<<endl;
+        player->set_warriors(player->warriors1() + 1000);
+        player->set_min_power(player->min_power1() + 2000);
+        player->set_max_power(player->max_power1() + 2000);
 
-    string item_name(){
-        return itemName;
-    }
-
-    void set_item_name(string item_name) {
-        itemName = item_name;
-    }
-    void useName(Player *player) {
-        cout<<"You used "<< itemName<<endl;
+        cout<<"You got 1000 warriors and your power increased on 2000\n";
     }
 };
+
 
 void showLore() {
 
@@ -520,7 +553,8 @@ public:
                     bool solved = trollPuzzle(player);
                     if(solved){
                         cout<<"\nThe Troll King nods.\n";
-                        cout<<"You receive a mobilisation ticket.\n";
+                        Item* ticket = new MobilizationTicket();
+                        player->addItem(ticket);
                         running = false;
                     }
                 }
