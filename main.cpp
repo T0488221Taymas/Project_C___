@@ -1,3 +1,4 @@
+#include <complex.h>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -62,6 +63,11 @@ public:
             lives = clives;
             wisdom = cwisdom;
         }
+    ~Player() {
+            for (Item* item : inventory) {
+                delete item;
+            }
+        }
     void addItem(Item *newItem) {
            inventory.push_back(newItem);
            cout<<"Item received: "<< newItem->item_name()<<endl;
@@ -77,6 +83,31 @@ public:
                 }
             }
         }
+    void inventoryMenu() {
+            bool run = true;
+            while (run) {
+                showInventory();
+                if (inventory.empty()) {
+                    run = false;
+                }
+                else {
+                    cout << "0) Exit\n";
+                    cout << "Choose item to use: ";
+                    int choice = getValidation();
+                    if (choice == 0) {
+                        run = false;
+                    }
+                    else if (choice < 1 || choice > inventory.size()) {
+                        cout << "Invalid choice!\n";
+                        continue;
+                    }
+                    else{
+                        useItem(choice -1);
+                    }
+                }
+            }
+
+        }
 
     //gpt
     void useItem(int index) {
@@ -90,6 +121,24 @@ public:
             delete inventory[index];
             inventory.erase(inventory.begin() + index);
         }//
+    void receiveItem(Item* item) {
+            cout << "\nYou obtained: " << item->item_name() << "!\n";
+            cout << "1) Use now\n";
+            cout << "2) Save for later\n";
+            cout << "Your choice: ";
+            int choice = getValidation();
+            if(choice == 1){
+                item->use(this);
+                delete item;
+            }
+            else if(choice == 2){
+                addItem(item);
+            }
+            else{
+                cout << "Invalid choice, saved to inventory.\n";
+                addItem(item);
+            }
+        }
 
     void set_name(string name) {
         Name = name;
@@ -220,6 +269,18 @@ public:
     }
 };
 
+class Weapon_Factory : public Item {
+public:
+    Weapon_Factory() : Item("Weapon Factory"){}
+    void use(Player *player) {
+        cout<<"You activated weapon Factory\n";
+        const int POWER= 2000;
+        player->set_min_power(player->min_power1()+POWER);
+        player->set_max_power(player->max_power1()+POWER);
+        cout<<"Your weapon upgraded power increased by 2000!\n";
+    }
+};
+
 
 void showLore() {
 
@@ -346,7 +407,10 @@ public:
 
 };
 class Scenes {
+protected:
+    int id;
 public:
+    Scenes(){}
     int chooseAction(Player* player){
         int decision;
         bool run = true;
@@ -355,8 +419,13 @@ public:
             cout << "1 Attack\n";
             cout << "2 Try diplomacy\n";
             cout << "3 See stats\n";
+            cout << "4 Inventory\n";
             cout << "Enter your choice: ";
             decision = getValidation();
+            if (decision == 4) {
+                player->inventoryMenu();
+                continue;
+            }
             if(decision == 3){
                 player->showStats();
                 continue;
@@ -365,7 +434,7 @@ public:
                 run = false;
             }
             else{
-                cout << "Enter number 1-3\n";
+                cout << "Enter number 1-4\n";
             }
         }
         return decision;
@@ -386,20 +455,36 @@ public:
         cout << "\nYou step before your people and speak:\n";
         cout << "Our kingdom stands united. Together we will build a future no enemy can destroy.\n\n";
 
+        const int REWARD = 400;
         if(answer == 1){
             cout << "The crowd erupts in cheers.\n";
-            player->set_min_power(player->min_power1() + 400);
-            player->set_max_power(player->max_power1() + 400);
+            player->set_min_power(player->min_power1() + REWARD);
+            player->set_max_power(player->max_power1() + REWARD);
             cout << "Power +400\n";
         }
         else{
             cout << "The crowd looks uncertain.\n";
-            player->set_min_power(player->min_power1() - 400);
-            player->set_max_power(player->max_power1() - 400);
+            player->set_min_power(player->min_power1() - REWARD);
+            player->set_max_power(player->max_power1() - REWARD);
             cout << "Power -400\n";
         }
         return true;
     }
+    virtual void Scene1(Player *player) = 0;
+    virtual void Scene2(Player *player) = 0;
+    virtual void Scene3(Player *player) = 0;
+    virtual void Scene4(Player *player) = 0;
+    virtual void Scene5(Player *player) = 0;
+    virtual void Scene6(Player *player) = 0;
+    virtual void Scene7(Player *player) = 0;
+    virtual void Scene8(Player *player) = 0;
+    virtual void Scene9(Player *player) = 0;
+    virtual void Scene10(Player *player) = 0;
+};
+
+
+class peopleScenes : public Scenes {
+public:
     int Humanchoose1(Player *player) {//scene 3
 
         cout << "Your scouts discovered two tribes nearby.\n";
@@ -427,7 +512,7 @@ public:
 
                 continue;
             }
-            if (x >=1 && x<=3) {
+            if (x >=1 && x<=2) {
                 run = false;
             }
             else {
@@ -445,9 +530,9 @@ public:
         player->set_warriors(player->warriors1() - loss);
 
         cout << "You lost " << loss << " warriors defending the capital.\n";
-
-        player->set_min_power(player->min_power1() - 700);
-        player->set_max_power(player->max_power1() - 700);
+        const int PENALTY = 700;
+        player->set_min_power(player->min_power1() - PENALTY);
+        player->set_max_power(player->max_power1() - PENALTY);
 
         cout << "Your soldiers are demoralized.\n";
         cout << "Army power decreased by 700.\n";
@@ -489,9 +574,10 @@ public:
         player->set_warriors(player->warriors1() - loss);
 
         cout << "You lost " << loss << " warriors.\n";
+        const int PENALTY = 500;
 
-        player->set_min_power(player->min_power1() - 500);
-        player->set_max_power(player->max_power1() - 500);
+        player->set_min_power(player->min_power1() - PENALTY);
+        player->set_max_power(player->max_power1() - PENALTY);
 
         cout << "Your army loses confidence.\n";
         cout << "Power decreased by 500.\n";
@@ -508,9 +594,12 @@ public:
             bool running = true;
             while (running) {
                 int decision = chooseAction(player);
-                if (decision == 1){
+                if (decision == 1){//goblins
                     bool win = goblins.battle(player, goblins);
                     if(win){
+                        cout<<"You captured a Weapon Factory!\n";
+                        Item *factory = new Weapon_Factory();
+                        player->receiveItem(factory);
                         running = false;
                     }
                     else{
@@ -522,15 +611,18 @@ public:
                     cout << "\n--- Ambush! ---\n";
                     cout << "While you tried diplomacy, the goblins attacked your kingdom!\n";
                     goblinRaid(player);
-                    cout<<"Your people discover a weapon factory\n";
+                    cout<<"You captured a Weapon Factory!\n";
+                    Item *factory = new Weapon_Factory();
+                    player->receiveItem(factory);
                     running = false;
+
                 }
                 else{
                     cout<<"Enter number 1-3\n";
                 }
             }
         }
-        else if (choice == 2){
+        else if (choice == 2){//trolls
             cout<<"Scouts reported about Trolls:\n";
             cout<<"Warriors: " <<trolls.warriors1()<<endl;
             cout<<"Power: "<<trolls.min_power1()<<"-"<<trolls.max_power1()<<endl;
@@ -554,7 +646,7 @@ public:
                     if(solved){
                         cout<<"\nThe Troll King nods.\n";
                         Item* ticket = new MobilizationTicket();
-                        player->addItem(ticket);
+                        player->receiveItem(ticket);
                         running = false;
                     }
                 }
@@ -565,185 +657,22 @@ public:
 
         }
     }
-
-    void humanStory(Player *player){
+    void Scene1(Player *player) override {
         int choice = Humanchoose1(player);
         Scene4(player,choice);
     }
-
-    bool elfPuzzleTree() {
-        cout << "\n--- Elven Campaign ---\n";
-        cout << "You approach an ancient tree in the heart of the forest.\n";
-
-        cout << "\nThe tree speaks:\n";
-        cout << "\"Answer my riddle, ruler of the elves.\"\n\n";
-
-        cout << "I have keys but no locks.\n";
-        cout << "I have space but no room.\n";
-        cout << "You can enter but cannot go outside.\n";
-        cout << "What am I?\n\n";
-
-        cout << "1 Keyboard\n";
-        cout << "2 Book\n";
-        cout << "Your answer: ";
-
-        int answer = getValidation();
-
-        while(answer < 1 || answer > 2){
-            cout << "Enter number between 1-2\n";
-            answer = getValidation();
-        }
-
-        if(answer == 1){
-            cout << "\nThe ancient tree whispers:\n";
-            cout << "The forest spirits respect wisdom.\n";
-            cout << "With them diplomacy will be easy.\n";
-            return true;
-        }
-        else{
-            cout << "Wrong answer.\n";
-            return false;
-        }
-    }
-    bool puzzleBeastfolkRiddle() {
-        cout << "\nThe Beastfolk leader challenges you with a riddle.\n\n";
-
-        cout << "I have cities but no houses.\n";
-        cout << "I have rivers but no water.\n";
-        cout << "I have forests but no trees.\n";
-        cout << "What am I?\n\n";
-
-        cout << "1 Map\n";
-        cout << "2 Shadow\n";
-        int answer;
-        while(answer < 1 || answer > 2){
-            cout << "Enter number between 1 and 2\n";
-            answer = getValidation();
-
-            if(answer == 1){
-                cout << "Correct answer.\n";
-                return true;
-            }
-            cout << "Wrong answer.\n";
-            return false;
-        }
-    }
-    int ElfChoose1(Player *player){
-        int x;
-        bool run = true;
-        cout << "\nTwo groups live near your forests.\n";
-        cout << "Beastfolk tribes roam the wild lands.\n";
-        cout << "Forest spirits guard ancient places.\n\n";
-        while(run){
-            cout<<"Who will you approach?\n";
-            cout<<"1 Beastfolk\n";
-            cout<<"2 Spirits\n";
-            cout<<"3 Kingdom Stats\n";
-            cout<<"Enter your choice: ";
-            x = getValidation();
-            if(x == 3){
-                player->showStats();
-                continue;
-            }
-            if(x == 1 || x == 2){
-                run = false;
-            }
-            else{
-                cout<<"Enter number between 1 and 3\n";
-            }
-        }
-        return x;
-    }
-    void SceneElf4(Player *player, int choice, bool tree){
-
-
-        Kingdom beastfolk("Beastfolk",19000,17000,20000);
-        Kingdom spirits("Spirits",5000,10000,15000);
-
-        if(choice == 1){
-            cout<<"Scouts reported about Beastfolk:\n";
-            cout<<"Warriors: "<<beastfolk.warriors1()<<endl;
-            cout<<"Power: "<<beastfolk.min_power1()<<"-"<<beastfolk.max_power1()<<endl;
-            bool running = true;
-            while(running){
-                int decision = chooseAction(player);
-                if(decision == 1){
-                    bool win = beastfolk.battle(player, beastfolk);
-                    if(win){
-
-                        running = false;
-                    }
-                    else{
-                        cout<<"Your army retreats and regroups...\n";
-                    }
-                }
-                else if(decision == 2){
-                    bool solved = puzzleBeastfolkRiddle();
-                    if(solved){
-                        cout<<"The Beastfolk agree to join your cause.\n";
-                        running = false;
-                    }
-                    else{
-                        cout<<"Negotiations fail.\n";
-                        bool win = beastfolk.battle(player, beastfolk);
-                        if(win){
-                            running = false;
-                        }
-                        else{
-                            cout<<"Your army retreats and regroups...\n";
-                        }
-                    }
-                }
-            }
-        }
-        else if(choice == 2){
-            cout<<"You approach the forest spirits.\n";
-            bool running = true;
-            while(running){
-                int decision = chooseAction(player);
-                if(decision == 1){
-                    cout<<"The spirits are weak and quickly defeated.\n";
-                    cout<<"Their defeat brings no benefit.\n";
-                    running = false;
-                }
-                else if(decision == 2){
-                    if(tree){
-                        cout<<"The spirits recognise your wisdom and immediately join you.\n";
-                    }
-                    else{
-                        cout<<"The spirits cautiously agree to cooperate.\n";
-                    }
-                    running = false;
-                }
-            }
-        }
-    }
-    void elfStory(Player *player) {
-        bool tree = elfPuzzleTree();
-        int choice = ElfChoose1(player);
-        SceneElf4(player, choice, tree);
-    }
+    void Scene2(Player *player) override {}
+    void Scene3(Player *player) override {}
+    void Scene4(Player *player) override {}
+    void Scene5(Player *player) override {}
+    void Scene6(Player *player) override {}
+    void Scene7(Player *player) override {}
+    void Scene8(Player *player) override {}
+    void Scene9(Player *player) override {}
+    void Scene10(Player *player) override {}
 };
 
-    void balance(Player *player, Kingdom &humans, Kingdom &elves, Kingdom &dwarves){
-
-        if(player->race() != "Humans"){
-            humans.set_min_power(humans.min_power1() + 2000);
-            humans.set_max_power(humans.max_power1() + 2000);
-        }
-
-        if(player->race() != "Elves"){
-            elves.set_min_power(elves.min_power1() + 2000);
-            elves.set_max_power(elves.max_power1() + 2000);
-        }
-
-        if(player->race() != "Dwarves"){
-            dwarves.set_min_power(dwarves.min_power1() + 2000);
-            dwarves.set_max_power(dwarves.max_power1() + 2000);
-        }
-
-
-    }
+    
 
     int main() {
         srand(time(0));
@@ -761,14 +690,17 @@ public:
 
         player.chooseRace();
 
-        balance(&player,humans, elves, dwarves);
-        Scenes scene;
+
+        peopleScenes scene;
         scene.introRiddle(&player);
         if(player.race() == "Humans"){
-            scene.humanStory(&player);
+            scene.Scene1(&player);
         }
         else if(player.race() == "Elves"){
-            scene.elfStory(&player);
+            cout << "\n[Elf storyline coming soon...]\n";
+        }
+        else if(player.race() == "Dwarves"){
+            cout << "\n[Dwarf storyline coming soon...]\n";
         }
         return 0;
     }
