@@ -5,6 +5,7 @@ using namespace std;
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <functional>
 
 int getValidation() {//validation
     int x;
@@ -191,6 +192,15 @@ public:
     }
     void LoseLive() {
             lives--;
+            cout<< "Lives left: "<<lives<<endl;
+            if(lives <= 0){
+
+                cout << "\n----- GAME OVER -----\n";
+                cout << "Your kingdom has fallen.\n";
+
+                exit(0);
+
+            }
         }
 
     [[nodiscard]] int wisdom1() const {
@@ -391,14 +401,7 @@ public:
             cout << "You lost one life.\n";
             cout << "Lives remaining: " << player->lives1() << endl;
 
-            if(player->lives1() <= 0){
 
-                cout << "\n----- GAME OVER -----\n";
-                cout << "Your kingdom has fallen.\n";
-
-                exit(0);
-
-            }
 
             return false;
         }
@@ -470,6 +473,20 @@ public:
         }
         return true;
     }
+    //GPT
+    void retryScene(Player* player, function<void()> scene) {
+        int before;
+
+        do {
+            before = player->lives1();
+            scene();
+
+            if(player->lives1() < before){
+                cout << "\nRetrying scene...\n";
+            }
+
+        } while(player->lives1() < before);
+    }//
     virtual void Scene1(Player *player) = 0;
     virtual void Scene2(Player *player) = 0;
     virtual void Scene3(Player *player) = 0;
@@ -582,7 +599,7 @@ public:
         cout << "Your army loses confidence.\n";
         cout << "Power decreased by 500.\n";
     }
-    void Scene4(Player *player, int choice) {
+    void goblin_troll(Player *player, int choice) {
 
         Kingdom goblins("Goblins", 25000, 14000, 17000);
         Kingdom trolls("Trolls", 10000, 15000, 18500);
@@ -657,13 +674,258 @@ public:
 
         }
     }
-    void Scene1(Player *player) override {
-        int choice = Humanchoose1(player);
-        Scene4(player,choice);
+    bool simpleBattle(Player* player, Kingdom enemy){
+        cout << "\n--- Battle begins ---\n";
+        int playerPower = rand() % (player->max_power1() - player->min_power1() + 1)+ player->min_power1();
+        int enemyPower = rand() % (enemy.max_power1() - enemy.min_power1() + 1)+ enemy.min_power1();
+        cout<<"Your army power: "<<playerPower<<endl;
+        cout<<enemy.race1()<<" army power: "<<enemyPower<<endl;
+        if(playerPower > enemyPower){
+            cout<<"Victory!\n";
+            return true;
+        }
+        else{
+            cout<<"Defeat!\n";
+            player->LoseLive();
+            return false;
+        }
     }
-    void Scene2(Player *player) override {}
-    void Scene3(Player *player) override {}
-    void Scene4(Player *player) override {}
+    void winterScene(Player *player) {
+        cout<<"----Winter Crisis----\n";
+        cout << "Two months have passed since your last campaign.\n";
+        cout << "Winter has come.\n";
+        cout << "Food production has stopped.\n";
+        cout << "Your people are beginning to starve.\n";
+        cout << "Your scouts report:\n";
+        cout << "A wealthy kingdom nearby has vast food reserves.\n";
+        cout << "Their granaries are full and they are well prepared.\n\n";
+        Kingdom winterKingdom("Rich Kingdom", 20000, 17000, 18500);
+        cout<<"Scouts reported about Rich Kingdom:\n";
+        cout<<"Warriors: " <<winterKingdom.warriors1()<<endl;
+        cout<<"Power: "<<winterKingdom.min_power1()<<"-"<<winterKingdom.max_power1()<<endl;
+        int originalMin = player->min_power1();
+        int originalMax = player->max_power1();
+        player->set_min_power(originalMin - 4500);
+        player->set_max_power(originalMax - 4500);
+        cout<<"\nYou lost 4500 power because of hunger!\n";
+        bool running = true;
+        while (running) {
+            cout << "\nWhat will you do?\n";
+            cout << "1 Attack before winter\n";
+            cout << "2 Try diplomacy\n";
+            cout << "3 Endure the winter\n";
+            cout << "4 Show stats\n";
+            cout << "5 Inventory\n";
+            cout << "Enter your choice: ";
+            int choice = getValidation();
+            switch (choice) {
+                case 4:
+                    player->showStats();
+                    continue;
+                case 5:
+                    player->inventoryMenu();
+                    continue;
+                case 1: {
+                    cout<<"You march from the freezing lands\n";
+                    bool win = simpleBattle(player, winterKingdom);
+                    if (win) {
+                        cout<<"Now you can not worry about food for rest time!\n";
+                        player->set_min_power(originalMin);
+                        player->set_max_power(originalMax);
+                    }
+                    else{
+                        cout << "Winter has weakened your forces\n";
+                    }
+                    running = false;
+                    break;
+                }
+
+                case 2:{
+                    cout<<"You tried Diplomacy";
+                    cout << "The ruler tests your intelligence.\n";
+
+                    cout << "Solve this:\n";
+                    cout << "If 5 armies bring 10000 power,\n";
+                    cout << "how much power do 9 armies bring?\n";
+                    int answer = getValidation();
+                    if(answer == 18000){
+                        cout << "\nThe ruler is impressed by your wisdom.\n";
+                        cout << "They join you and share their food.\n";
+                        player->set_min_power(originalMin + 1000);
+                        player->set_max_power(originalMax + 1000);
+                        cout << "Power increased!\n";
+                    }
+                    else {
+                        cout << "\nWrong answer.\n";
+                        cout << "The ruler refuses your offer.\n";
+
+                        cout << "1 Attack\n";
+                        cout << "2 Endure winter\n";
+
+                        int second = getValidation();
+
+                        if(second == 1){
+                            cout << "\nYou attack in desperation\n";
+
+                            bool win = simpleBattle(player, winterKingdom);
+
+                            if(win){
+                                cout << "Victory despite everything!\n";
+                                player->set_min_power(originalMin );
+                                player->set_max_power(originalMax );
+                            }
+                        }
+                        else{
+                            cout << "\nYou endure the winter...\n";
+                            player->set_min_power(player->min_power1() - 1000);
+                            player->set_max_power(player->max_power1() - 1000);
+
+                            cout << "Your army suffers even more.\n";
+                        }
+                    }
+
+                    running = false;
+                    break;
+                    }
+                case 3: {
+                    cout << "\nYou endure the winter...\n";
+                    player->set_min_power(player->min_power1() - 1000);
+                    player->set_max_power(player->max_power1() - 1000);
+
+                    cout << "Your army suffers even more.\n";
+                    running = false;
+                    break;
+                }
+                    default:
+                        cout << "Enter number 1-5\n";
+                }
+            }
+        }
+    void socialScene(Player *player) {
+        cout << "\n---------------------------------\n";
+        cout << "        NEW CITIZENS\n";
+        cout << "---------------------------------\n\n";
+        cout << "After surviving the winter...\n";
+        cout << "Refugees from different races arrive in your kingdom.\n";
+        cout << "They seek shelter and a new life.\n\n";
+
+        bool running = true;
+        while (running) {
+            cout << "What will you do?\n";
+            cout << "1 Build homes for them\n";
+            cout << "2 Refuse them\n";
+            cout << "3 Show stats\n";
+            cout << "4 Inventory\n";
+            cout << "Enter your choice: ";
+
+            int choice = getValidation();
+
+            switch(choice){
+
+                case 3:
+                    player->showStats();
+                    continue;
+
+                case 4:
+                    player->inventoryMenu();
+                    continue;
+                case 1: {
+                    cout << "\nYou decide to accept all races into your kingdom.\n";
+                    cout << "Houses are built. People feel equal and respected.\n";
+                    cout << "Your kingdom grows stronger.\n";
+                    player->set_min_power(player->min_power1() + 500);
+                    player->set_max_power(player->max_power1() + 500);
+                    cout << "Power +500\n";
+                    running = false;
+                    break;
+                    case 2: {
+                        cout << "\nYou refuse to accept them.\n";
+                        cout << "Tension rises...\n";
+                        cout << "A rebellion begins!\n\n";
+                        cout << "Rebels are weak...\n";
+                        cout << "But some of your own warriors join them.\n";
+                        player->set_min_power(player->min_power1() - 4000);
+                        player->set_max_power(player->max_power1() - 4000);
+                        cout << "4000 power lost due to betrayal.\n";
+                        cout << "\nYou crush the rebellion...\n";
+                        player->set_min_power(player->min_power1() - 1000);
+                        player->set_max_power(player->max_power1() - 1000);
+                        cout << "1000 power lost in battle.\n";
+                        cout << "Total loss: -5000 power\n";
+                        running = false;
+                        break;
+                    }
+                    default:
+                    cout<<"Enter number 1-4\n";
+                }
+                }
+            }
+        }
+    bool advisorPuzzle(Player *player) {
+        cout<< "Advisor says:\nWhat comes down but never goes up?\n";
+
+        cout << "1 Time\n";
+        cout << "2 Rain\n";
+        cout << "3 Self-confidence\n";
+        cout << "\nYour answer: ";
+        int answer = getValidation();
+        while(answer < 1 || answer > 3){
+            cout << "Enter number between 1-3\n";
+            answer = getValidation();
+        }
+        if(answer == 2){
+            cout << "Advisor gives you a clue: \nNorth army: VERY STRONG\nSouth army: WEAKER\n";
+            return true;
+        }
+
+            player->LoseLive();
+            cout << "\nWrong decision!\n";
+            cout << "You sent your main army to the weaker enemy\n";
+            cout << "The strong army breaks through!\n";
+
+
+            return false;
+
+    }
+    void doubleAttack(Player *player) {
+        cout<<"\n----Two Front War----\n";
+        cout << "Your kingdom is under attack!\n";
+        cout << "Two enemy armies approach from different sides.\n";
+        cout<< "Your advisor will give you clue, when you will solve his puzzle\n";
+
+        bool solved = advisorPuzzle(player);
+        if (!solved) {
+            cout<<"You miscalculated your strategy\n";
+            cout << "Try again!\n\n";
+            return;
+        }
+        cout << "\nYou correctly positioned your army!\n";
+        cout << "Both attacks were successfully defended!\n";
+
+
+    }
+
+    void Scene1(Player *player) override {
+        retryScene(player, [this, player]() {
+            int choice = Humanchoose1(player);
+            goblin_troll(player,choice);
+        });
+    }
+    void Scene2(Player *player) override {
+        retryScene(player, [this, player]() {
+            winterScene(player);
+        });
+    }
+    void Scene3(Player *player) override {
+        retryScene(player, [this, player]() {
+            socialScene(player);
+        });
+    }
+    void Scene4(Player *player) override {
+        retryScene(player, [this, player]() {
+            doubleAttack(player);
+        });
+    }
     void Scene5(Player *player) override {}
     void Scene6(Player *player) override {}
     void Scene7(Player *player) override {}
@@ -695,6 +957,9 @@ public:
         scene.introRiddle(&player);
         if(player.race() == "Humans"){
             scene.Scene1(&player);
+            scene.Scene2(&player);
+            scene.Scene3(&player);
+            scene.Scene4(&player);
         }
         else if(player.race() == "Elves"){
             cout << "\n[Elf storyline coming soon...]\n";
