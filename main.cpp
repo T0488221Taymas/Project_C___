@@ -76,7 +76,7 @@ public:
     void showInventory() {
             cout<<"----Inventory----\n";
             if (inventory.empty()) {
-                cout<<"Inventory empty\n";
+                cout<<"Inventory empty\n\n";
             }
             else {
                 for (int i= 0; i < inventory.size(); i++) {
@@ -288,6 +288,22 @@ public:
         player->set_min_power(player->min_power1()+POWER);
         player->set_max_power(player->max_power1()+POWER);
         cout<<"Your weapon upgraded power increased by 2000!\n";
+    }
+};
+
+class Cannon : public Item {
+public:
+    Cannon() : Item("Cannon") {}
+
+    void use(Player *player) override {
+        cout << "You deployed a Cannon!\n";
+
+        const int POWER = 1500;
+
+        player->set_min_power(player->min_power1() + POWER);
+        player->set_max_power(player->max_power1() + POWER);
+
+        cout << "Your power increased by 1500!\n";
     }
 };
 
@@ -691,7 +707,8 @@ public:
         }
     }
     void winterScene(Player *player) {
-        cout<<"----Winter Crisis----\n";
+        cout<<"\n----Winter Crisis----\n";
+        static bool winterApplied = false;
         cout << "Two months have passed since your last campaign.\n";
         cout << "Winter has come.\n";
         cout << "Food production has stopped.\n";
@@ -699,15 +716,17 @@ public:
         cout << "Your scouts report:\n";
         cout << "A wealthy kingdom nearby has vast food reserves.\n";
         cout << "Their granaries are full and they are well prepared.\n\n";
-        Kingdom winterKingdom("Rich Kingdom", 20000, 17000, 18500);
+        Kingdom winterKingdom("Rich Kingdom", 20000, 17000, 18000);
         cout<<"Scouts reported about Rich Kingdom:\n";
         cout<<"Warriors: " <<winterKingdom.warriors1()<<endl;
         cout<<"Power: "<<winterKingdom.min_power1()<<"-"<<winterKingdom.max_power1()<<endl;
-        int originalMin = player->min_power1();
-        int originalMax = player->max_power1();
-        player->set_min_power(originalMin - 4500);
-        player->set_max_power(originalMax - 4500);
-        cout<<"\nYou lost 4500 power because of hunger!\n";
+        if(!winterApplied){
+            player->set_min_power(player->min_power1() - 4500);
+            player->set_max_power(player->max_power1() - 4500);
+            cout<<"\nYou lost 4500 power because of hunger!\n";
+            winterApplied = true;
+        }
+
         bool running = true;
         while (running) {
             cout << "\nWhat will you do?\n";
@@ -730,8 +749,14 @@ public:
                     bool win = simpleBattle(player, winterKingdom);
                     if (win) {
                         cout<<"Now you can not worry about food for rest time!\n";
-                        player->set_min_power(originalMin);
-                        player->set_max_power(originalMax);
+                        if(!winterApplied){
+                            player->set_min_power(player->min_power1() - 4500);
+                            player->set_max_power(player->max_power1() - 4500);
+
+                            cout<<"\nYou lost 4500 power because of hunger!\n";
+
+                            winterApplied = true;
+                        }
                     }
                     else{
                         cout << "Winter has weakened your forces\n";
@@ -751,8 +776,8 @@ public:
                     if(answer == 18000){
                         cout << "\nThe ruler is impressed by your wisdom.\n";
                         cout << "They join you and share their food.\n";
-                        player->set_min_power(originalMin + 1000);
-                        player->set_max_power(originalMax + 1000);
+                        player->set_min_power(player->min_power1() + 4500);
+                        player->set_max_power(player->max_power1() + 4500);
                         cout << "Power increased!\n";
                     }
                     else {
@@ -771,8 +796,8 @@ public:
 
                             if(win){
                                 cout << "Victory despite everything!\n";
-                                player->set_min_power(originalMin );
-                                player->set_max_power(originalMax );
+                                player->set_min_power(player->min_power1() + 1000 + 4500);
+                                player->set_max_power(player->max_power1() + 1000 + 4500);
                             }
                         }
                         else{
@@ -786,7 +811,7 @@ public:
 
                     running = false;
                     break;
-                    }
+                }
                 case 3: {
                     cout << "\nYou endure the winter...\n";
                     player->set_min_power(player->min_power1() - 1000);
@@ -796,11 +821,11 @@ public:
                     running = false;
                     break;
                 }
-                    default:
-                        cout << "Enter number 1-5\n";
-                }
+                default:
+                    cout << "Enter number 1-5\n";
             }
         }
+    }
     void socialScene(Player *player) {
         cout << "\n---------------------------------\n";
         cout << "        NEW CITIZENS\n";
@@ -858,9 +883,9 @@ public:
                     default:
                     cout<<"Enter number 1-4\n";
                 }
-                }
             }
         }
+    }
     bool advisorPuzzle(Player *player) {
         cout<< "Advisor says:\nWhat comes down but never goes up?\n";
 
@@ -878,13 +903,13 @@ public:
             return true;
         }
 
-            player->LoseLive();
-            cout << "\nWrong decision!\n";
-            cout << "You sent your main army to the weaker enemy\n";
-            cout << "The strong army breaks through!\n";
+        player->LoseLive();
+        cout << "\nWrong decision!\n";
+        cout << "You sent your main army to the weaker enemy\n";
+        cout << "The strong army breaks through!\n";
 
 
-            return false;
+        return false;
 
     }
     void doubleAttack(Player *player) {
@@ -904,35 +929,201 @@ public:
 
 
     }
+    void TraitorScene(Player *player) {
+        cout << "\n----Betrayal Revealed----\n";
+        cout << "Your advisor has been acting strangely...\n";
+        cout << "Scouts report secret meetings with a mysterious race.\n\n";
+        cout << "Solve this puzzle that decides when you have heard about it\n";
+        cout << "What belongs to you but others use it more than you do?\n";
+        cout << "1 Name\n2 Right hand\n3 Time\n";
+        cout<< "Your answer: ";
+        int answer = getValidation();
+        if (answer == 1) {
+            cout<< "You heard as soon as possible\n";
+            cout << "The Shadow Clan attacked you but you were prepared\n";
+            Kingdom ShadowClan("Shadow Clan", 18000, 17000, 19000);
+            bool win = ShadowClan.battle(player, ShadowClan);
+            if (win) {
+                cout << "\nThe traitor is executed.\n";
+                cout << "Your kingdom is safe.\n";
 
-    void Scene1(Player *player) override {
-        retryScene(player, [this, player]() {
-            int choice = Humanchoose1(player);
-            goblin_troll(player,choice);
-        });
+                cout << "A new loyal advisor joins you.\n";
+                player->set_wisdom(player->wisdom1() + 1);
+                cout << "Wisdom +1\n";
+            }
+        }
+        else if (answer == 2 || answer == 3){
+            cout << "It was late, they already bagan an attack\n";
+            cout << "It was unexpectable attack, your army lost 4000 power\n";
+            player->set_min_power(player->min_power1() - 4000);
+            player -> set_max_power(player -> max_power1() - 4000);
+            Kingdom ShadowClan("Shadow Clan", 18000, 17000, 19000);
+            bool win = ShadowClan.battle(player, ShadowClan);
+            if (win) {
+                cout << "\nThe traitor is executed.\n";
+                cout << "Your kingdom is safe.\n";
+
+                cout << "A new loyal advisor joins you.\n";
+                player->set_wisdom(player->wisdom1() + 1);
+                cout << "Wisdom +1\n";
+            }
+
+
+        }
+        else {
+            cout << "Enter number 1-3\n";
+        }
     }
-    void Scene2(Player *player) override {
-        retryScene(player, [this, player]() {
-            winterScene(player);
-        });
+
+    void publicSpeech(Player *player) {
+        cout<< "Solve math task to say speach\n";
+        cout<< "2+2*2=?\n";
+        cout << "Your answer: ";
+        int answer  = getValidation();
+        if (answer == 6) {
+            cout << "\nYou speak with confidence.\n";
+            cout << "\"This will never happen again!\"\n";
+            cout << "People are inspired and regain hope.\n";
+            cout << "\nAn engineer approaches you...\n";
+            cout << "\"My ruler, I created something for you.\"\n";
+            Item* cannon = new Cannon();
+            player->receiveItem(cannon);
+            cout<< "Your Power: "<<player->min_power1()<<"- "<< player-> max_power1()<<endl;
+        }
+        else {
+            cout << "\nYou hesitate...\n";
+            cout << "Your speech fails to convince the people.\n";
+            cout << "Fear spreads across the kingdom.\n";
+
+            player->set_min_power(player->min_power1() - 200);
+            player->set_max_power(player->max_power1() - 200);
+            cout << "Power -200\n";
+            cout << "\nThe engineer leaves the kingdom...\n";
+            cout << "You lost a valuable opportunity.\n";
+            cout<< "Your Power: "<<player->min_power1()<<"- "<< player-> max_power1()<<endl;
+        }
     }
-    void Scene3(Player *player) override {
-        retryScene(player, [this, player]() {
-            socialScene(player);
-        });
+
+    bool elfPuzzle(Player *player) {
+        cout << "\nThe Elf Queen speaks:\n";
+        cout << "\"Answer wisely, human...\"\n\n";
+        cout<< "What do you throw out when you want to use it, but take in when you don’t want to use it?\n";
+        cout<< "1 Anchor\n2 ball\n";
+        cout<< "Your answer: ";
+        bool running = true;
+        while (running){
+            int answer = getValidation();
+            if(answer == 1){
+                cout << "\nThe Queen smiles.\n";
+                running = false;
+                return true;
+            }
+            else if (answer == 2){
+                cout << "\nThe Queen frowns.\n";
+                running = true;
+                return false;
+            }
+            else {
+                cout<<"Enter number 1-2\n";
+            }
+        }
     }
-    void Scene4(Player *player) override {
-        retryScene(player, [this, player]() {
-            doubleAttack(player);
-        });
+    void elfScene(Player* player) {
+        cout << "\n----Elven Kingdom----\n";
+        cout << "You arrive at the Elven capital...\n";
+        cout << "The Queen awaits your decision.\n\n";
+        Kingdom elves("Elves", 22000, 20000, 25500);
+        cout<<"Scouts reported about elves:\n";
+        cout<<"Warriors: " <<elves.warriors1()<<endl;
+        cout<<"Power: "<<elves.min_power1()<<"-"<<elves.max_power1()<<endl;
+        bool running = true;
+        while(running){
+            int decision = chooseAction(player);
+            if(decision == 1){
+                cout << "\nYou chose war against the Elves!\n";
+                bool win = elves.battle(player, elves);
+                if(win){
+                    cout << "\nYou defeated the Elves!\n";
+                    player->set_min_power(player->min_power1() + 2500);
+                    player->set_max_power(player->max_power1() + 2500);
+                    cout << "Power +2500\n";
+                    running = false;
+                }
+                else{
+                    cout << "Your army retreats...\n";
+                }
+            }
+
+            else if(decision == 2){
+                bool solved = elfPuzzle(player);
+
+                if(solved){
+                    cout << "\nAn alliance is formed through marriage.\n";
+                    cout << "The kingdoms are united.\n";
+                    player->set_min_power(player->min_power1() + 3000);
+                    player->set_max_power(player->max_power1() + 3000);
+                    cout << "Power +3000\n";
+                    running = false;
+                }
+                else{
+                    cout << "\nDiplomacy failed!\n";
+                    cout << "The Elves attack!\n";
+                    player->set_min_power(player->min_power1() - 1000);
+                    player->set_max_power(player->max_power1() - 1000);
+                    cout << "Power -1000\n";
+                    bool win = elves.battle(player, elves);
+                    if(win){
+                        cout << "\nYou barely won the war...\n";
+                        running = false;
+                    }
+                    else{
+                        cout << "You were pushed back...\n";
+                    }
+                }
+            }
+        }
     }
-    void Scene5(Player *player) override {}
-    void Scene6(Player *player) override {}
-    void Scene7(Player *player) override {}
-    void Scene8(Player *player) override {}
-    void Scene9(Player *player) override {}
-    void Scene10(Player *player) override {}
-};
+
+        void Scene1(Player *player) override {
+            retryScene(player, [this, player]() {
+                int choice = Humanchoose1(player);
+                goblin_troll(player,choice);
+            });
+        }
+        void Scene2(Player *player) override {
+            retryScene(player, [this, player]() {
+                winterScene(player);
+            });
+        }
+        void Scene3(Player *player) override {
+            retryScene(player, [this, player]() {
+                socialScene(player);
+            });
+        }
+        void Scene4(Player *player) override {
+            retryScene(player, [this, player]() {
+                doubleAttack(player);
+            });
+        }
+        void Scene5(Player *player) override {
+            retryScene(player, [this, player]() {
+               TraitorScene(player);
+            });
+        }
+        void Scene6(Player *player) override {
+            retryScene(player, [this, player]() {
+               publicSpeech(player);
+            });
+        }
+        void Scene7(Player *player) override {
+        retryScene(player, [this, player]() {
+              elfScene(player);
+           });
+    }
+        void Scene8(Player *player) override {}
+        void Scene9(Player *player) override {}
+        void Scene10(Player *player) override {}
+    };
 
     
 
@@ -960,6 +1151,9 @@ public:
             scene.Scene2(&player);
             scene.Scene3(&player);
             scene.Scene4(&player);
+            scene.Scene5(&player);
+            scene.Scene6(&player);
+            scene.Scene7(&player);
         }
         else if(player.race() == "Elves"){
             cout << "\n[Elf storyline coming soon...]\n";
