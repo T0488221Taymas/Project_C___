@@ -512,7 +512,15 @@ public:
     virtual void Scene7(Player *player) = 0;
     virtual void Scene8(Player *player) = 0;
     virtual void Scene9(Player *player) = 0;
-    virtual void Scene10(Player *player) = 0;
+    void finalScene(Player* player){
+        cout << "\n----FINAL----\n";
+
+        if(player->lives1() > 0){
+            cout << "You united the world!\n";
+        } else {
+            cout << "Your kingdom fell...\n";
+        }
+    }
 };
 
 
@@ -976,6 +984,7 @@ public:
     }
 
     void publicSpeech(Player *player) {
+        cout << "\n----Public Event----\n";
         cout<< "Solve math task to say speach\n";
         cout<< "2+2*2=?\n";
         cout << "Your answer: ";
@@ -1020,7 +1029,7 @@ public:
             }
             else if (answer == 2){
                 cout << "\nThe Queen frowns.\n";
-                running = true;
+                running = false;
                 return false;
             }
             else {
@@ -1083,6 +1092,162 @@ public:
             }
         }
     }
+    void featScene(Player *player) {
+        cout << "\n----Festival----\n";
+        cout << "A grand feast is held in honor of your recent victories.\n";
+        cout << "Music plays, nobles celebrate...\n";
+        cout << "But suddenly, one Elf becomes aggressive and starts causing chaos!\n\n";
+        bool running = true;
+        while (running) {
+            cout << "What will you do?\n";
+            cout << "1 Kill the elf\n";
+            cout << "2 Calm him down\n";
+            cout << "Enter your choice: ";
+            int choice = getValidation();
+            switch (choice) {
+                case 1: {
+                    cout << "\nYou chose violence\n";
+                    cout << "The elf is killed.\n";
+                    cout << "But this causes outrage among the elves!\n";
+                    cout << "A rebellion begins inside your kingdom!\n";
+
+                    player->set_warriors(player->warriors1() - 2000);
+                    player->set_min_power(player->min_power1() - 3000);
+                    player->set_max_power(player->max_power1() - 3000);
+
+                    cout << "You lost 2000 warriors and 3000 power.\n";
+
+                    running = false;
+                    break;
+                }
+                case 2:{
+                    cout << "\nYou try to calm him down...\n";
+                    cout << "He challenges your intelligence:\n";
+                    cout << "Solve this:\n";
+                    cout << "3 * 3 + 6 = ?\n";
+                    cout << "Your answer: ";
+                    int answer = getValidation();
+                    if (answer == 15) {
+                        cout << "\nYou speak wisely and calmly.\n";
+                        cout << "The elf slowly regains control.\n";
+                        cout << "The feast continues peacefully.\n";
+                    }
+                    else {
+                        cout << "\nThe elf gets furious!\n";
+                        cout << "\"You mock me?!\"\n";
+                        cout << "He suddenly stabs you!\n";
+                        player->LoseLive();
+                    }
+
+                    running = false;
+                    break;
+                }
+                default:
+                    cout << "Enter number 1 or 2\n";
+            }
+        }
+    }
+    void dwarfeScene(Player *player) {
+        cout << "\n----Dwarven Kingdom----\n";
+        cout << "You enter the mountains of the Dwarves...\n";
+        cout << "Their warriors are unmatched in strength.\n";
+        cout << "They respect only power and honor.\n\n";
+        Kingdom dwarves("Dwarves", 30000, 23000, 27000);
+        cout<<"Scouts reported about Dwarves:\n";
+        cout<<"Warriors: " << dwarves.warriors1() << endl;
+        cout<<"Power: "<< dwarves.min_power1() << "-" << dwarves.max_power1() << endl;
+
+        bool running = true;
+        while (running) {
+            cout << "What will you do?\n";
+            cout << "1 Armies fight\n";
+            cout << "2 Fight 1 vs 1\n";
+            cout << "3 Show stats\n";
+            cout << "4 Inventory\n";
+            cout << "Enter your choice: ";
+            int choice = getValidation();
+            switch (choice) {
+                case 3:
+                    player->showStats();
+                    continue;
+                case 4:
+                    player->inventoryMenu();
+                    continue;
+                case 1: {
+                    cout << "\nYou chose full-scale war!\n";
+
+                    bool win = dwarves.battle(player, dwarves);
+
+                    if (win) {
+                        cout << "\nYou defeated the Dwarves!\n";
+                        player->set_min_power(player->min_power1() + 3000);
+                        player->set_max_power(player->max_power1() + 3000);
+                        cout << "Power +3000\n";
+                        running = false;
+                    }
+                    else {
+                        cout << "Your army retreats from the mountains...\n";
+                    }
+                    break;
+                }
+                case 2: {
+                    cout << "\nThe Dwarf King accepts your challenge.\n";
+                    cout << "You will fight in a duel of minds and honor!\n\n";
+                    int correct = 0;
+                    cout << "Riddle 1:\n";
+                    cout << "10 + 10*10/10 = ?\n";
+                    cout << "Your answer: ";
+                    int a1 = getValidation();
+                    if (a1 == 20) correct++;
+                    cout << "\nRiddle 2:\n";
+                    cout << "550/2 = ?\n";
+                    cout << "Your answer: ";
+                    int a2 = getValidation();
+                    if (a2 == 275) correct++;
+                    cout << "\nRiddle 3:\n";
+                    cout << "log(2)16 = ?\n";
+                    cout << "Your answer: ";
+                    int a3 = getValidation();
+                    if (a3 == 4) correct++;
+
+                    cout << "\nYou solved " << correct << " riddles.\n";
+                    int chance;
+                    if (correct == 3) {
+                        chance = 80;
+                    }
+                    else if (correct == 2) {
+                        chance = 50;
+                    }
+                    else {
+                        chance = 10;
+                    }
+                    cout << "Your chance of victory: " << chance << "%\n";
+                    int roll = rand() % 100;
+                    cout << "Fell out: "<< roll<< endl;
+                    if (roll < chance) {
+                        cout << "\nYou defeated the Dwarf King in honorable combat!\n";
+                        cout << "The Dwarves respect your strength.\n";
+
+                        player->set_min_power(player->min_power1() + 3500);
+                        player->set_max_power(player->max_power1() + 3500);
+
+                        cout << "Power +3500\n";
+                        running = false;
+                    }
+                    else {
+                        cout << "\nYou lost the duel...\n";
+                        cout << "The Dwarf King strikes you down!\n";
+                        player->LoseLive();
+                        running = false;
+                    }
+                    break;
+                }
+                    default:
+                    cout<< "Enter number 1-4\n";
+
+            }
+        }
+    }
 
         void Scene1(Player *player) override {
             retryScene(player, [this, player]() {
@@ -1120,9 +1285,17 @@ public:
               elfScene(player);
            });
     }
-        void Scene8(Player *player) override {}
-        void Scene9(Player *player) override {}
-        void Scene10(Player *player) override {}
+    void Scene8(Player *player) override {
+        retryScene(player, [this, player]() {
+        featScene(player);
+            });
+    }
+        void Scene9(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfeScene(player);
+            });
+    }
+
     };
 
     
@@ -1154,6 +1327,9 @@ public:
             scene.Scene5(&player);
             scene.Scene6(&player);
             scene.Scene7(&player);
+            scene.Scene8(&player);
+            scene.Scene9(&player);
+            scene.finalScene(&player);
         }
         else if(player.race() == "Elves"){
             cout << "\n[Elf storyline coming soon...]\n";
