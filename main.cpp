@@ -53,6 +53,9 @@ class Player {
     int lives;
     int wisdom;
 
+    int temp_power_bonus = 0;
+    bool acceptedHybrid = false;
+
     vector <Item*> inventory;
 public:
         Player (string cName, string cRace, int cwarriors,int cmin_power, int cmax_power, int clives, int cwisdom) {
@@ -68,6 +71,12 @@ public:
             for (Item* item : inventory) {
                 delete item;
             }
+        }
+    void setAcceptedHybrid(bool val){
+            acceptedHybrid = val;
+        }
+    bool getAcceptedHybrid() const{
+            return acceptedHybrid;
         }
     void addItem(Item *newItem) {
            inventory.push_back(newItem);
@@ -207,6 +216,13 @@ public:
         return wisdom;
     }
 
+    void setTempBonus(int bonus){
+            temp_power_bonus = bonus;
+        }
+    int getTempBonus() const{
+            return temp_power_bonus;
+        }
+
     void chooseRace() {
             bool running = true;
 
@@ -282,7 +298,7 @@ public:
 class Weapon_Factory : public Item {
 public:
     Weapon_Factory() : Item("Weapon Factory"){}
-    void use(Player *player) {
+    void use(Player *player) override{
         cout<<"You activated weapon Factory\n";
         const int POWER= 2000;
         player->set_min_power(player->min_power1()+POWER);
@@ -304,6 +320,16 @@ public:
         player->set_max_power(player->max_power1() + POWER);
 
         cout << "Your power increased by 1500!\n";
+    }
+};
+
+class NatureSpiritCall : public Item {
+public:
+    NatureSpiritCall() : Item("Nature Spirit Call") {}
+    void use(Player* player) override {
+        cout << "You call the Great Spirit of Nature!\n";
+        cout << "It will aid you in the next battle.\n";
+        player->setTempBonus(4000);
     }
 };
 
@@ -388,39 +414,34 @@ public:
     [[nodiscard]] int max_power1() const {
         return max_power;
     }
-    bool battle(Player *player, Kingdom enemy) {//battle logic
+    bool battle(Player *player, Kingdom enemy) {
         cout << "---Battle begins---\n";
-        int playerPower = rand()%(player->max_power1() - player->min_power1() + 1)+ player->min_power1();
-        int enemyPower =rand() % (enemy.max_power1() - enemy.min_power1() + 1)+ enemy.min_power1();
 
-        cout<<"Your army power: "<<playerPower<<endl;
-        cout<<enemy.race1()<<" army power: "<<enemyPower<<endl;
+        int bonus = player->getTempBonus();
+        int playerMin = player->min_power1() + bonus;
+        int playerMax = player->max_power1() + bonus;
+        int playerPower = rand() % (playerMax - playerMin + 1) + playerMin;
+        int enemyPower = rand() % (enemy.max_power1() - enemy.min_power1() + 1) + enemy.min_power1();
+        cout << "Your army power: " << playerPower << endl;
+        cout << enemy.race1() << " army power: " << enemyPower << endl;
+
         if(playerPower > enemyPower){
-
-            cout<<"Victory!"<<enemy.race1()<< " tribe defeated.\n";
-
-            int gained = enemy.warriors1()/6;
-
+            cout << "Victory! " << enemy.race1() << " tribe defeated.\n";
+            int gained = enemy.warriors1() / 6;
             player->set_warriors(player->warriors1() + gained);
-
-            cout<<"Part of "<<enemy.race1()<<" warriors joined you: +"<<gained<<endl;
+            cout << "Part of " << enemy.race1() << " warriors joined you: +" << gained << endl;
             player->set_min_power(player->min_power1() + 400);
             player->set_max_power(player->max_power1() + 400);
-            cout<<"Your power increased: "<<player->min_power1()<<"-"<<player->max_power1()<<endl;
-            return true;
+            cout << "Your power increased: " << player->min_power1() << "-" << player->max_power1() << endl;
         }
-
         else {
             player->LoseLive();
-
             cout << "\nDefeat!\n";
             cout << "You lost one life.\n";
             cout << "Lives remaining: " << player->lives1() << endl;
-
-
-
-            return false;
         }
+        player->setTempBonus(0);
+        return playerPower > enemyPower;
     }
 
 
@@ -1298,13 +1319,1069 @@ public:
 
     };
 
+class elfStory : public Scenes{
+public:
+    bool elfPuzzleTree() {
+        cout << "\n--- Elven Campaign ---\n";
+        cout << "You approach an ancient tree in the heart of the forest.\n";
+
+        cout << "\nThe tree speaks:\n";
+        cout << "\"Answer my riddle, ruler of the elves.\"\n\n";
+
+        cout << "I have keys but no locks.\n";
+        cout << "I have space but no room.\n";
+        cout << "You can enter but cannot go outside.\n";
+        cout << "What am I?\n\n";
+
+        cout << "1 Keyboard\n";
+        cout << "2 Book\n";
+        cout << "Your answer: ";
+
+        int answer = getValidation();
+
+        while(answer < 1 || answer > 2){
+            cout << "Enter number between 1-2\n";
+            answer = getValidation();
+        }
+
+        if(answer == 1){
+            cout << "\nThe ancient tree whispers:\n";
+            cout << "The forest spirits respect wisdom.\n";
+            cout << "With them diplomacy will be easy.\n";
+            return true;
+        }
+        else{
+            cout << "Wrong answer.\n";
+            return false;
+        }
+    }
+    bool puzzleBeastfolkRiddle() {
+        cout << "\nThe Beastfolk leader challenges you with a riddle.\n\n";
+
+        cout << "I have cities but no houses.\n";
+        cout << "I have rivers but no water.\n";
+        cout << "I have forests but no trees.\n";
+        cout << "What am I?\n\n";
+
+        cout << "1 Map\n";
+        cout << "2 Shadow\n";
+        int answer = getValidation();
+        if(answer == 1){
+            cout << "Correct answer.\n";
+            return true;
+        }
+        else if(answer == 2){
+            cout << "Wrong answer.\n";
+            return false;
+        }
+        else{
+            cout << "Enter number between 1 and 2\n";
+            return false;
+        }
+    }
+    int ElfChooseWolvesSpirits(Player *player){
+        int x;
+        do {
+            cout << "\n1 Beastfolk\n";
+            cout << "2 Spirits\n";
+            cout << "3 Stats\n";
+            cout << "4 Inventory\n";
+            cout << "Choice: ";
+            x = getValidation();
+            switch(x){
+                case 3:
+                    player->showStats();
+                    break;
+                case 4:
+                    player->inventoryMenu();
+                    break;
+            }
+        } while(x != 1 && x != 2);
+
+        return x;
+    }
+    void wolvesScene(Player* player){
+        Kingdom Beastfolk("Beastfolk", 14000, 16000, 19000);
+        cout << "\nScouts reported about Beastfolk:\n";
+        cout << "Pack strength: " << Beastfolk.warriors1() << endl;
+        cout << "Power: " << Beastfolk.min_power1() << "-" << Beastfolk.max_power1() << endl;
+        bool running = true;
+        while(running){
+            int decision = chooseAction(player);
+            switch(decision){
+                case 1: {
+                    cout << "\nYou attack the Beastfolk!\n";
+                    bool win = Beastfolk.battle(player, Beastfolk);
+                    if(win){
+                        cout << "You dominated the wolf packs.\n";
+                        player->set_warriors(player->warriors1() + 1500);
+                        cout << "Warriors +1500\n";
+                        running = false;
+                    }
+                    break;
+                }
+                case 2: {
+                    cout << "\nYou try to tame the Beastfolk\n";
+                    cout << "Alpha wolf asks:\n";
+                    cout << "What runs but never walks?\n";
+                    cout << "1 River\n2 Fire\n";
+                    int answer = getValidation();
+                    if(answer == 1){
+                        cout << "\nThe alpha accepts you.\n";
+                        cout << "You receive Mobilization Ticket!\n";
+
+                        Item* ticket = new MobilizationTicket();
+                        player->receiveItem(ticket); // ← инвентарь тут
+
+                        running = false;
+                    }
+                    else{
+                        cout << "\nThe Beastfolks attack!\n";
+                        player->LoseLive();
+                        running = false;
+                    }
+                    break;
+                }
+                default:
+                    cout << "Enter number 1-2\n";
+            }
+        }
+    }
+    void spiritsScene(Player* player){
+        cout << "\nYou enter sacred forest...\n";
+        cout << "The air becomes calm...\n";
+        cout << "\nThe spirits recognize you as an elf ruler.\n";
+        cout << "They do not test you.\n";
+        cout << "They join your kingdom willingly.\n\n";
+        player->set_min_power(player->min_power1() + 1500);
+        player->set_max_power(player->max_power1() + 1500);
+        cout << "Power +1500\n";
+        cout << "\nThe Great Spirit grants you a blessing...\n";
+        Item* spiritCall = new NatureSpiritCall();
+        player->receiveItem(spiritCall);
+    }
+    void beastfolks_spirits(Player* player){
+        int choice = ElfChooseWolvesSpirits(player);
+        switch(choice){
+            case 1:
+                wolvesScene(player);
+                break;
+            case 2:
+                spiritsScene(player);
+                break;
+        }
+    }
+    void elfWinterDilemma(Player* player){
+    cout << "\n----Fading Forest----\n";
+    cout << "Winter has come...\n";
+    cout << "Your forest is dying.\n";
+    cout << "Magic weakens. Trees lose their glow.\n\n";
+    cout << "Scouts report another forest nearby...\n";
+    cout << "But it belongs to the Dark Elves.\n\n";
+    cout << "They are weaker than your people...\n";
+    cout << "But your army is weakened by winter.\n\n";
+    bool running = true;
+    do {
+        cout << "\nWhat will you do?\n";
+        cout << "1 Move to new forest (risk battle)\n";
+        cout << "2 Stay and endure winter\n";
+        cout << "3 Show stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou move to a new forest...\n";
+                cout << "Dark Elves block your path!\n";
+                Kingdom darkElves("Dark Elves", 15000, 15000, 17500);
+                int oldMin = player->min_power1();
+                int oldMax = player->max_power1();
+                player->set_min_power(oldMin - 2500);
+                player->set_max_power(oldMax - 2500);
+                cout << "Winter weakens you (-2500 power this battle)\n";
+
+                bool win = darkElves.battle(player, darkElves);
+                player->set_min_power(oldMin);
+                player->set_max_power(oldMax);
+                if(win){
+                    cout << "\nYou defeated the Dark Elves!\n";
+                    cout << "You settle in a new forest.\n";
+                }
+                else{
+                    cout << "\nYou retreat into the cold...\n";
+                }
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou stay in your dying forest...\n";
+                cout << "Your people suffer.\n";
+                const int PERMA = 2000;
+                player->set_min_power(player->min_power1() - PERMA);
+                player->set_max_power(player->max_power1() - PERMA);
+                cout << "Permanent power -2000\n";
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    } while(running);
+}
+    void sacredTreeScene(Player* player){
+    cout << "\n----Sacred Tree----\n";
+    cout << "The ancient tree is dying...\n";
+    cout << "Its magic sustains the longevity of all elves.\n\n";
+    cout << "If it dies...\n";
+    cout << "Your people will lose part of their life force.\n\n";
+    bool running = true;
+
+    do {
+        cout << "What will you do?\n";
+        cout << "1 Heal the tree\n";
+        cout << "2 Ignore it\n";
+        cout << "3 Show stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou attempt to heal the sacred tree...\n";
+                cout << "Ancient magic requires precision.\n\n";
+                cout << "Solve this:\n";
+                cout << "6 * 6 - 10 = ?\n";
+                cout << "Your answer: ";
+                int answer = getValidation();
+                if(answer == 26){
+                    cout << "\nThe tree is restored!\n";
+                    cout << "Its magic flows once again.\n";
+                    player->set_min_power(player->min_power1() + 1500);
+                    player->set_max_power(player->max_power1() + 1500);
+                    cout << "Power +1500\n";
+                }
+                else{
+                    cout << "\nYour magic fails...\n";
+                    cout << "The tree collapses into dust.\n";
+                    player->LoseLive();
+                }
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou ignore the tree...\n";
+                cout << "Days pass...\n";
+                cout << "The sacred tree dies.\n\n";
+                cout << "Elves feel their life force fading...\n";
+                player->LoseLive();
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    } while(running);
+}
+    void hybridVisitorScene(Player* player){
+    cout << "\n----Strange Visitor----\n";
+    cout << "A traveler arrives at your gates...\n\n";
+    cout << "He is... unusual.\n";
+    cout << "Half-elf. Half-dwarf.\n\n";
+    cout << "\"My mother was one of your elders,\" he says.\n";
+    cout << "\"I seek a place in your kingdom.\"\n\n";
+    cout << "Your advisors whisper:\n";
+    cout << "\"He does not belong to any race...\"\n\n";
+    bool running = true;
+    do {
+        cout << "What will you do?\n";
+        cout << "1 Accept him\n";
+        cout << "2 Refuse\n";
+        cout << "3 Show stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou accept the stranger.\n";
+                cout << "That night, he approaches you.\n\n";
+                cout << "\"If you are worthy... answer this.\"\n\n";
+                cout << "I build but never rest.\n";
+                cout << "I create but never live.\n";
+                cout << "What am I?\n";
+                cout << "1 Factory\n2 Warrior\n";
+                int answer = getValidation();
+                if(answer == 1){
+                    cout << "\nHe smiles.\n";
+                    cout << "\"Then you understand...\"\n\n";
+                    cout << "He reveals the location of an abandoned factory.\n";
+                    cout << "You claim it for your kingdom.\n\n";
+                    Item* factory = new Weapon_Factory();
+                    player->receiveItem(factory);
+                }
+                else{
+                    cout << "\nHe looks disappointed.\n";
+                    cout << "\"You are not ready...\"\n";
+                }
+                player->setAcceptedHybrid(true);
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou refuse him.\n";
+                cout << "He lowers his head\n\n";
+                cout << "\"You have lost your chance to grow stronger.\"\n";
+                cout << "Without another word, he disappears into the shadows.\n";
+                player->setAcceptedHybrid(false);
+                running = false;
+                break;
+            }
+
+            default:
+                cout << "Enter number 1-4\n";
+        }
+
+    } while(running);
+}
+    void hybridReturnScene(Player* player){
+    cout << "\n----Unexpected Return----\n";
+    if(player->getAcceptedHybrid()){
+
+
+        cout << "The hybrid returns...\n";
+        cout << "\"Enemies are coming. I warned you.\"\n\n";
+        cout << "A small enemy force approaches.\n";
+        Kingdom weakArmy("Raiders", 8000, 9000, 11000);
+        cout << "Scouts report:\n";
+        cout << "Warriors: " << weakArmy.warriors1() << endl;
+        cout << "Power: " << weakArmy.min_power1() << "-" << weakArmy.max_power1() << endl;
+        cout << "\nYour army easily overwhelms them.\n";
+        cout << "Victory is inevitable.\n";
+        cout << "Victory!\n";
+        cout << "No significant gains.\n";
+    }
+    else{
+        cout << "A familiar figure stands before your gates...\n";
+        cout << "It is the one you rejected.\n\n";
+        cout << "\"You chose weakness. Now face it.\"\n\n";
+        cout << "He has taken control of an abandoned factory...\n";
+        cout << "His army is stronger.\n";
+        Kingdom boss("Hybrid Warlord", 22000, 20000, 24000);
+        cout << "\nScouts report:\n";
+        cout << "Warriors: " << boss.warriors1() << endl;
+        cout << "Power: " << boss.min_power1() << "-" << boss.max_power1() << endl;
+        bool running = true;
+        while(running){
+            int decision = chooseAction(player);
+            switch(decision){
+                case 1: {
+                    cout << "\nYou engage the Hybrid Warlord!\n";
+                    bool win = boss.battle(player, boss);
+                    if(win){
+                        cout << "\nYou defeated the hybrid!\n";
+                        cout << "The factory is now yours.\n";
+                        Item* factory = new Weapon_Factory();
+                        player->receiveItem(factory);
+                        running = false;
+                    }
+                    else{
+                        cout << "He laughs as your army retreats...\n";
+                    }
+                    break;
+                }
+                case 2: {
+                    cout << "\nYou attempt diplomacy...\n";
+                    cout << "\"Too late for that.\"\n";
+                    cout << "He attacks immediately!\n";
+                    bool win = boss.battle(player, boss);
+                    if(win){
+                        cout << "\nYou barely survive and defeat him.\n";
+                        Item* factory = new Weapon_Factory();
+                        player->receiveItem(factory);
+                        running = false;
+                    }
+                    break;
+                }
+                default:
+                    cout << "Enter number 1-4\n";
+            }
+        }
+    }
+}
+    void feastScene(Player* player){
+    cout << "\n----Grand Feast----\n";
+    cout << "A great feast is held in your honor.\n";
+    cout << "Music fills the hall, nobles celebrate your victories.\n\n";
+    cout << "Wine flows. Guards relax.\n";
+    cout << "For a moment... there is peace.\n\n";
+    bool running = true;
+    do {
+        cout << "What will you do?\n";
+        cout << "1 Enjoy the feast\n";
+        cout << "2 Stay alert\n";
+        cout << "3 Show stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou relax and enjoy the feast...\n";
+                cout << "Laughter echoes across the hall.\n\n";
+                cout << "Suddenly...\n";
+                cout << "A sharp pain hits you.\n";
+                cout << "The wine was poisoned!\n";
+                player->LoseLive();
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou stay alert, watching the crowd...\n";
+                cout << "Something feels wrong.\n\n";
+                cout << "You notice a servant acting strangely.\n";
+                cout << "He carries a cup toward you.\n\n";
+                cout << "Solve quickly:\n";
+                cout << "8 * 3 - 10 = ?\n";
+                cout << "Your answer: ";
+                int answer = getValidation();
+                if(answer == 14){
+                    cout << "\nYou react instantly!\n";
+                    cout << "You stop the servant.\n";
+                    cout << "He confesses — an assassin.\n\n";
+                    cout << "The threat is eliminated.\n";
+                    player->set_min_power(player->min_power1() + 1000);
+                    player->set_max_power(player->max_power1() + 1000);
+                    cout << "Power +1000\n";
+                }
+                else{
+                    cout << "\nToo slow...\n";
+                    cout << "The poison reaches you.\n";
+                    player->LoseLive();
+                }
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    } while(running);
+}
+    void assassinTruthScene(Player* player) {
+        cout << "\n----The Poisoner----\n";
+        cout << "You find the one who tried to poison you...\n\n";
+        cout << "\"Answer me... and I will tell you the truth.\"\n\n";
+        cout << "I am always behind you, yet you cannot see me.\n";
+        cout << "What am I?\n";
+        cout << "1 Shadow\n2 Wind\n";
+        int answer = getValidation();
+        if(answer == 1){
+            cout << "\"It was the dwarves. They prepare for war.\"\n";
+        }
+        else{
+            cout << "\"It was the humans.\"\n";
+        }
+        bool running = true;
+        do {
+            int choose = chooseAction(player);
+            if (choose == 1) {
+                cout << "It was incorrect choice...\n";
+                cout << "During your fight Dwarfs attack you\n";
+                cout << "Now Dwarfs are the kings of this mainland\n";
+                player->LoseLive();
+                running = false;
+            }
+            else if (choose == 2) {
+                    cout << "\nYou choose diplomacy...\n";
+                    cout << "The humans agree immediately.\n";
+                    cout << "An alliance is formed.\n";
+                    player->set_min_power(player->min_power1() + 2500);
+                    player->set_max_power(player->max_power1() + 2500);
+                    cout << "Power +2500\n";
+                    running = false;
+            }
+        }while (running);
+    }
+    void finalSceneElves(Player* player){
+        cout << "\n----FINAL----\n\n";
+
+        cout << "With the humans at your side...\n";
+        cout << "Your armies march as one.\n\n";
+
+        cout << "The dwarves stand against you...\n";
+        cout << "But they are not ready for such force.\n\n";
+
+        cout << "The battle is short.\n";
+        cout << "Their lines break.\n";
+        cout << "Their king falls.\n\n";
+
+        cout << "Victory.\n\n";
+
+        cout << "The continent is united.\n";
+        cout << "Elves and humans rule together.\n";
+        cout << "A new era begins.\n";
+    }
+
+    void Scene1(Player *player) override {
+        elfPuzzleTree();
+    }
+    void Scene2(Player *player) override {
+        beastfolks_spirits(player);
+    }
+    void Scene3(Player *player) override {
+        retryScene(player, [this, player]() {
+        elfWinterDilemma(player);
+            });
+    }
+    void Scene4(Player *player) override {
+        retryScene(player, [this, player]() {
+        sacredTreeScene(player);
+            });
+    }
+    void Scene5(Player *player) override {
+        retryScene(player, [this, player]() {
+        hybridVisitorScene(player);
+            });
+    }
+    void Scene6(Player *player) override {
+        retryScene(player, [this, player]() {
+        hybridVisitorScene(player);
+            });
+    }
+    void Scene7(Player *player) override {
+        retryScene(player, [this, player]() {
+        feastScene(player);
+            });
+    }
+    void Scene8(Player *player) override {
+        retryScene(player, [this, player]() {
+        assassinTruthScene(player);
+            });
+    }
+    void Scene9(Player *player) override {
+        finalSceneElves(player);
+    }
+};
+class AncientAlloy : public Item {
+public:
+    AncientAlloy() : Item("Ancient Alloy") {}
+
+    void use(Player* player) override {
+        cout << "You study the Ancient Alloy...\n";
+        cout << "Your understanding of craft improves.\n";
+
+        player->set_wisdom(player->wisdom1() + 1);
+
+        cout << "Wisdom +1\n";
+    }
+};
+
+class DwarfStory : public Scenes {
+public:
+    void dwarfForgeDuel(Player* player){
+        cout << "\n----Forge Duel----\n";
+        cout << "You enter the great forge of the dwarves.\n";
+        cout << "Heat, steel, and fire surround you.\n\n";
+        cout << "\"We judge rulers by their craft skills.\"\n";
+        int correct = 2;
+        cout << "Question 1:\n";
+        cout << "What does 'Au' mean?\n";
+        cout << "1 Silver\n2 Gold\n3 Iron\n4 Copper\n";
+        cout << "Answer: ";
+        int a1 = getValidation();
+        if(a1 == 2){
+            correct += 30;
+        }
+        cout << "\nQuestion 2:\n";
+        cout << "At what temperature does water boil ?\n";
+        cout << "1 50\n2 90\n3 100\n4 120\n";
+        cout << "Answer: ";
+        int a2 = getValidation();
+        if(a2 == 3){
+            correct += 30;
+        }
+        cout << "\nQuestion 3:\n";
+        cout << "What is better sword or axe?\n";
+        cout << "1 Depends on fighter skills\n2 Axe\n3 Sword\n4 Depends on weapon's quality\n";
+        cout << "Answer: ";
+        int a3 = getValidation();
+        if(a3 == 1){
+            correct += 30;
+        }
+        int chance = correct;
+
+        cout << "Your chance of success: " << chance << "%\n";
+
+        int roll = rand() % 100;
+
+        cout << "Roll: " << roll << endl;
+
+        if(roll <= chance){
+            cout << "\nThe dwarves nod in respect.\n";
+            cout << "\"You understand the forge.\"\n";
+            player->set_min_power(player->min_power1() + 2000);
+            player->set_max_power(player->max_power1() + 2000);
+            cout << "Power +2000\n";
+        }
+        else{
+            player ->LoseLive();
+        }
+    }
+    void HobbitScene(Player *player) {
+        cout << "\n----Hobbit Settlements----\n";
+        cout << "You discover peaceful hobbit villages.\n";
+        cout << "They are small... but clever.\n\n";
+        Kingdom hobbits("Hobbits", 9000, 12000, 15000);
+        cout << "\nScouts report:\n";
+        cout << "Warriors: " << hobbits.warriors1() << endl;
+        cout << "Power: " << hobbits.min_power1() << "-" << hobbits.max_power1() << endl;
+        bool running = true;
+        do {
+            int choice = chooseAction(player);
+            switch(choice){
+                case 1: {
+                    cout << "\nYou attack the hobbits...\n";
+                    bool win = hobbits.battle(player, hobbits);
+                    if(win){
+                        cout << "\nYou crush their resistance.\n";
+                        cout << "You capture their workshop!\n";
+                        Item* factory = new Weapon_Factory();
+                        player->receiveItem(factory);
+                    }
+                    else{
+                        cout << "Even hobbits can surprise you...\n";
+                    }
+                    running = false;
+                    break;
+                }
+                case 2: {
+                    cout << "\nYou attempt diplomacy...\n";
+                    cout << "The hobbits test your intelligence.\n\n";
+                    cout << "Solve this:\n";
+                    cout << "12 * 2 + 6 = ?\n";
+                    cout << "Your answer: ";
+                    int answer = getValidation();
+                    if(answer == 30){
+                        cout << "\nThe hobbits trust you.\n";
+                        cout << "They offer support.\n";
+                        Item* ticket = new MobilizationTicket();
+                        player->receiveItem(ticket);
+                    }
+                    else{
+                        cout << "\nWrong.\n";
+                        cout << "The hobbits refuse to help.\n";
+                    }
+                    running = false;
+                    break;
+                }
+                default:
+                    cout << "Enter number 1-4\n";
+            }
+        } while(running);
+    }
+    void hobbitRebellion(Player* player){
+    cout << "\n----Hobbit Trouble----\n";
+    cout << "Some dwarves mistreat the hobbits.\n";
+    cout << "Tension rises in the settlements.\n\n";
+    bool running = true;
+    do {
+        cout << "What will you do?\n";
+        cout << "1 Stop the dwarves\n";
+        cout << "2 Ignore the situation\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 1: {
+                cout << "\nYou decide to restore order.\n";
+                cout << "The hobbits test your fairness.\n\n";
+                cout << "Solve this:\n";
+                cout << "15 + 5 * 2 = ?\n";
+                cout << "Your answer: ";
+                int answer = getValidation();
+                if(answer == 25){
+                    cout << "\nThe hobbits respect your justice.\n";
+                    cout << "They support your rule.\n";
+                    player->set_min_power(player->min_power1() + 1000);
+                    player->set_max_power(player->max_power1() + 1000);
+                    cout << "Power +1000\n";
+                }
+                else{
+                    cout << "\nYou fail to calm the situation...\n";
+                    cout << "Rebellion begins!\n";
+                    player->set_min_power(player->min_power1() - 4000);
+                    player->set_max_power(player->max_power1() - 4000);
+                    cout << "Power -4000\n";
+                }
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou ignore the problem...\n";
+                cout << "The hobbits rise in rebellion!\n";
+                player->set_min_power(player->min_power1() - 4000);
+                player->set_max_power(player->max_power1() - 4000);
+                cout << "Power -4000\n";
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-2\n";
+        }
+    } while(running);
+}
+    void rareMetalScene(Player* player){
+        cout << "\n----Deep Mine Discovery----\n";
+        cout << "Deep in the mines...\n";
+        cout << "Your workers discover a strange metal.\n\n";
+        cout << "It glows faintly.\n";
+        cout << "No one understands its purpose.\n\n";
+        cout << "An inscription is carved nearby:\n\n";
+        cout << "\"I am not alive, but I grow.\n";
+        cout << "I dont have lungs, but I need air.\n";
+        cout << "What am I?\"\n\n";
+        cout << "1 Fire\n2 Stone\n3 Iron\n4 Shadow\n";
+        cout << "Your answer: ";
+        int answer = getValidation();
+        if(answer == 1){
+            cout << "\nYou understand...\n";
+            cout << "This metal reacts to heat.\n";
+            cout << "It can be forged into something powerful.\n\n";
+            Item* alloy = new AncientAlloy();
+            player->receiveItem(alloy);
+        }
+        else{
+            cout << "\nYou fail to understand its nature...\n";
+            cout << "The metal is discarded as useless.\n";
+        }
+    }
+    void dwarfBetrayal(Player* player){
+        cout << "\n----Clan Betrayal----\n";
+        cout << "One of the dwarf clans plots against you.\n";
+        cout << "They seek power.\n\n";
+        bool running = true;
+        while(running){
+            cout << "What will you do?\n";
+            cout << "1 Execute the traitors\n";
+            cout << "2 Show mercy\n";
+            cout << "3 Stats\n";
+            cout << "4 Inventory\n";
+            cout << "Choice: ";
+            int choice = getValidation();
+            switch(choice){
+                case 3:
+                    player->showStats();
+                    continue;
+                case 4:
+                    player->inventoryMenu();
+                    continue;
+                case 1: {
+                    cout << "\nYou execute the traitors.\n";
+                    cout << "Order is restored through fear.\n";
+                    player->set_min_power(player->min_power1() + 1500);
+                    player->set_max_power(player->max_power1() + 1500);
+                    cout << "Power +1500\n";
+                    running = false;
+                    break;
+                }
+                case 2: {
+                    cout << "\nYou show mercy...\n";
+                    cout << "The clan pretends loyalty...\n";
+                    cout << "But betrayal comes later.\n";
+                    player->set_min_power(player->min_power1() - 2000);
+                    player->set_max_power(player->max_power1() - 2000);
+                    cout << "Power -2000\n";
+                    running = false;
+                    break;
+                }
+                default:
+                    cout << "Enter number 1-4\n";
+            }
+        }
+    }
+    void dwarfTombScene(Player* player){
+    cout << "\n----Ancient Tomb----\n";
+    cout << "Deep in the mountains...\n";
+    cout << "You discover an ancient sealed tomb.\n\n";
+    cout << "Runes are carved into the stone:\n\n";
+    cout << "I guard treasures untold.\n";
+    cout << "I sleep on gold.\n";
+    cout << "Fire is my breath.\n";
+    cout << "What am I?\n\n";
+    cout << "1 Dragon\n2 King\n3 Fire\n";
+    if(player->wisdom1() <= 2)
+        cout << "4 Demon\n";
+    cout << "Your answer: ";
+    int answer = getValidation();
+
+
+    if(answer == 1){
+        cout << "\nYou understand the warning...\n";
+        cout << "A dragon sleeps within.\n";
+    }
+    else{
+        cout << "\nThe meaning escapes you...\n";
+    }
+    bool running = true;
+    do {
+        cout << "\nWhat will you do?\n";
+        cout << "1 Enter the tomb\n";
+        cout << "2 Leave it\n";
+        cout << "3 Stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou enter the tomb...\n";
+                cout << "The ground trembles...\n";
+                cout << "\nA DRAGON AWAKENS!\n";
+                cout << "After a brutal battle...\n";
+                cout << "You defeat it.\n";
+                cout << "But all treasures burned during the fight :(\n";
+                player->set_min_power(player->min_power1() - 5000);
+                player->set_max_power(player->max_power1() - 5000);
+                cout << "Power -5000\n";
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou decide not to risk it.\n";
+                cout << "Some secrets are better left buried.\n";
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    } while(running);
+}
+    void dwarfFeastScene(Player* player){
+    cout << "\n----War Council Feast----\n";
+    cout << "Before the great war...\n";
+    cout << "Your generals gather in the great hall.\n\n";
+    cout << "Some suggest a final feast to raise morale.\n";
+    cout << "Others prefer strict preparation.\n\n";
+    bool running = true;
+    do {
+        cout << "What will you do?\n";
+        cout << "1 Hold a feast\n";
+        cout << "2 Prepare for war\n";
+        cout << "3 Stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                break;
+            case 4:
+                player->inventoryMenu();
+                break;
+            case 1: {
+                cout << "\nYou hold a grand feast.\n";
+                cout << "Ale flows. Warriors laugh.\n\n";
+                cout << "But suddenly, two captains argue...\n";
+                cout << "Solve quickly:\n";
+                cout << "9 + 3 * 2 = ?\n";
+                cout << "Your answer: ";
+                int answer = getValidation();
+                if(answer == 15){
+                    cout << "\nYou calm them with wisdom.\n";
+                    cout << "Morale rises across the army.\n";
+                    player->set_min_power(player->min_power1() + 1500);
+                    player->set_max_power(player->max_power1() + 1500);
+                    cout << "Power +1500\n";
+                }
+                else{
+                    cout << "\nThe conflict escalates...\n";
+                    cout << "Tension spreads in your ranks.\n";
+                    player->set_min_power(player->min_power1() - 1000);
+                    player->set_max_power(player->max_power1() - 1000);
+                    cout << "Power -1000\n";
+                }
+                running = false;
+                break;
+            }
+            case 2: {
+                cout << "\nYou choose discipline over celebration.\n";
+                cout << "Your army prepares in silence.\n";
+                running = false;
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    } while(running);
+}
+    void dwarfWarElfScene(Player* player){
+    cout << "\n----War with Elves----\n";
+    cout << "The war begins...\n";
+    cout << "Elven armies stand before you.\n\n";
+    Kingdom elves("Elves", 20000, 22000, 27000);
+    cout << "Scouts report:\n";
+    cout << "Warriors: " << elves.warriors1() << endl;
+    cout << "Power: " << elves.min_power1() << "-" << elves.max_power1() << endl;
+    bool running = true;
+    while(running){
+        cout << "\nWhat will you do?\n";
+        cout << "1 Army vs Army\n";
+        cout << "2 Duel (1 vs 1)\n";
+        cout << "3 Stats\n";
+        cout << "4 Inventory\n";
+        cout << "Choice: ";
+        int choice = getValidation();
+        switch(choice){
+            case 3:
+                player->showStats();
+                continue;
+            case 4:
+                player->inventoryMenu();
+                continue;
+            case 1: {
+                cout << "\nYou command a full assault!\n";
+                bool win = elves.battle(player, elves);
+                if(win){
+                    cout << "\nYou crush the elven army.\n";
+                    player->set_min_power(player->min_power1() + 2000);
+                    player->set_max_power(player->max_power1() + 2000);
+                    cout << "Power +2000\n";
+                    running = false;
+                }
+                else{
+                    cout << "The elves push you back...\n";
+                }
+                break;
+            }
+            case 2: {
+                cout << "\nYou challenge the Elf Champion.\n";
+                cout << "A duel of mind and skill begins.\n\n";
+                int correct = 0;
+                cout << "Riddle 1:\n";
+                cout << "20 / 5 + 6 = ?\n";
+                cout<< "Answer: ";
+                if(getValidation() == 10) correct++;
+                cout << "\nRiddle 2:\n";
+                cout << "2^4 = ?\n";
+                cout<< "Answer: ";
+                if(getValidation() == 16) correct++;
+                cout << "\nRiddle 3:\n";
+                cout << "log(2)32 = ?\n";
+                cout<< "Answer: ";
+                if(getValidation() == 5) correct++;
+                cout << "\nCorrect: " << correct << endl;
+                int chance = correct * 30;
+                cout << "Chance: " << chance << "%\n";
+                int roll = rand() % 100;
+                cout << "Roll: " << roll << endl;
+                if(roll < chance){
+                    cout << "\nYou defeat the Elf Champion!\n";
+                    cout << "The elven army retreats.\n";
+                    player->set_min_power(player->min_power1() + 2500);
+                    player->set_max_power(player->max_power1() + 2500);
+                    cout << "Power +2500\n";
+                    running = false;
+                }
+                else{
+                    cout << "\nYou lose the duel...\n";
+                    player->LoseLive();
+                }
+                break;
+            }
+            default:
+                cout << "Enter number 1-4\n";
+        }
+    }
+}
+    void dwarfFinalScene(){
+        cout << "\n----FINAL----\n\n";
+        cout << "The war is over.\n";
+        cout << "The elves have fallen.\n\n";
+        cout << "The mountains stand stronger than ever.\n";
+        cout << "The forges burn day and night.\n\n";
+        cout << "Now only one question remains...\n";
+        cout << "When will the humans fall?\n\n";
+        cout << "It is only a matter of time.\n\n";
+        cout << "You have brought glory to the dwarven kingdoms.\n";
+        cout << "Strength. Steel. Power.\n\n";
+        cout << "You are the ruler of this world.\n";
+    }
+    void Scene1(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfForgeDuel(player);
+            });
+    }
+    void Scene2(Player *player) override {
+        retryScene(player, [this, player]() {
+        HobbitScene(player);
+            });
+    }
+    void Scene3(Player *player) override {
+        retryScene(player, [this, player]() {
+        hobbitRebellion(player);
+            });
+    }
+    void Scene4(Player *player) override {
+        retryScene(player, [this, player]() {
+        rareMetalScene(player);
+            });
+    }
+    void Scene5(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfBetrayal(player);
+            });
+    }
+    void Scene6(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfTombScene(player);
+            });
+    }
+    void Scene7(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfFeastScene(player);
+            });
+    }
+    void Scene8(Player *player) override {
+        retryScene(player, [this, player]() {
+        dwarfWarElfScene(player);
+            });
+    }
+    void Scene9(Player *player) override {
+        dwarfFinalScene();
+    }
+};
+
     
 
     int main() {
         srand(time(0));
-        Kingdom humans("Humans",25000,18000,20000);
-        Kingdom elves("Elves",18000,20000,22000);
-        Kingdom dwarves("Dwarves",12000,21000,23500);
         Player player("","",0,0,0,3,0);
         string inputName;
         cout<<"Enter your name: ";
@@ -1317,9 +2394,10 @@ public:
         player.chooseRace();
 
 
-        peopleScenes scene;
-        scene.introRiddle(&player);
+
         if(player.race() == "Humans"){
+            peopleScenes scene;
+            scene.introRiddle(&player);
             scene.Scene1(&player);
             scene.Scene2(&player);
             scene.Scene3(&player);
@@ -1332,10 +2410,29 @@ public:
             scene.finalScene(&player);
         }
         else if(player.race() == "Elves"){
-            cout << "\n[Elf storyline coming soon...]\n";
+            elfStory elfScene;
+            elfScene.introRiddle(&player);
+            elfScene.Scene1(&player);
+            elfScene.Scene2(&player);
+            elfScene.Scene3(&player);
+            elfScene.Scene4(&player);
+            elfScene.Scene5(&player);
+            elfScene.Scene6(&player);
+            elfScene.Scene7(&player);
+            elfScene.Scene8(&player);
+            elfScene.Scene9(&player);
         }
         else if(player.race() == "Dwarves"){
-            cout << "\n[Dwarf storyline coming soon...]\n";
+            DwarfStory dwarvesScene;
+            dwarvesScene.Scene1(&player);
+            dwarvesScene.Scene2(&player);
+            dwarvesScene.Scene3(&player);
+            dwarvesScene.Scene4(&player);
+            dwarvesScene.Scene5(&player);
+            dwarvesScene.Scene6(&player);
+            dwarvesScene.Scene7(&player);
+            dwarvesScene.Scene8(&player);
+            dwarvesScene.Scene9(&player);
         }
         return 0;
     }
